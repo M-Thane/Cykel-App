@@ -91,15 +91,24 @@ export default function BikeFit() {
         </div>
       </Card>
 
-      {selectedModel && modelSize && (
+      {selectedModel && (
         <Card>
           <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
             Anbefalet størrelse — {bikeModelLabel(selectedModel)}
           </p>
-          <p className="mt-1 text-2xl font-semibold text-brand-400">{modelSize.size}</p>
-          <p className="mt-1 text-xs text-slate-500">
-            Producentens egen guide for {heightCm}cm ({modelSize.heightMinCm}–{modelSize.heightMaxCm}cm)
-          </p>
+          {modelSize ? (
+            <>
+              <p className="mt-1 text-2xl font-semibold text-brand-400">{modelSize.size}</p>
+              <p className="mt-1 text-xs text-slate-500">
+                Producentens egen guide for {heightCm}cm ({modelSize.heightMinCm}–{modelSize.heightMaxCm}cm)
+              </p>
+            </>
+          ) : (
+            <p className="mt-1 text-sm text-slate-400">
+              Ingen bekræftet størrelsestabel for denne model endnu — brug det generelle skøn nedenfor i stedet.
+            </p>
+          )}
+          {selectedModel.note && <p className="mt-1 text-xs text-slate-500">{selectedModel.note}</p>}
         </Card>
       )}
 
