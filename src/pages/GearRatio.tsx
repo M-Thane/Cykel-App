@@ -1,6 +1,101 @@
-import { useMemo, useState } from 'react'
-import { Card, Field, Input, Select, SectionTitle } from '../components/ui'
+import { useEffect, useMemo, useState } from 'react'
+import { Button, Card, Field, Input, Select, SectionTitle } from '../components/ui'
 import { WHEEL_PRESETS, calcGearMatrix, parseTeethList } from '../lib/gearRatio'
+import {
+  GROUPSET_PRESETS,
+  cassetteLabel,
+  chainringComboLabel,
+  presetLabel,
+  type GroupsetDiscipline,
+} from '../lib/groupsets'
+
+const GROUPSET_DISCIPLINES: { value: GroupsetDiscipline; label: string }[] = [
+  { value: 'landevej', label: 'Landevej' },
+  { value: 'gravel', label: 'Gravel' },
+  { value: 'mtb', label: 'MTB' },
+]
+
+function GroupsetPicker({ onApply }: { onApply: (chainrings: number[], cogs: number[]) => void }) {
+  const [discipline, setDiscipline] = useState<GroupsetDiscipline>('landevej')
+  const available = useMemo(() => GROUPSET_PRESETS.filter((p) => p.discipline === discipline), [discipline])
+  const [presetId, setPresetId] = useState(available[0]?.id ?? '')
+  const preset = available.find((p) => p.id === presetId) ?? available[0]
+
+  const [chainringIdx, setChainringIdx] = useState(0)
+  const [cassetteIdx, setCassetteIdx] = useState(0)
+
+  useEffect(() => {
+    if (available.length && !available.some((p) => p.id === presetId)) {
+      setPresetId(available[0].id)
+    }
+    setChainringIdx(0)
+    setCassetteIdx(0)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [discipline, available])
+
+  if (GROUPSET_PRESETS.length === 0) return null
+
+  return (
+    <Card>
+      <p className="mb-3 text-sm text-slate-400">
+        Vælg et gruppesæt fra SRAM, Shimano eller Campagnolo for at udfylde klinger og kassette automatisk.
+      </p>
+      <div className="grid gap-3 sm:grid-cols-4 sm:items-end">
+        <Field label="Type cykling">
+          <Select value={discipline} onChange={(e) => setDiscipline(e.target.value as GroupsetDiscipline)}>
+            {GROUPSET_DISCIPLINES.map((d) => (
+              <option key={d.value} value={d.value}>
+                {d.label}
+              </option>
+            ))}
+          </Select>
+        </Field>
+        <Field label="Gruppesæt">
+          <Select value={preset?.id ?? ''} onChange={(e) => setPresetId(e.target.value)}>
+            {available.map((p) => (
+              <option key={p.id} value={p.id}>
+                {presetLabel(p)}
+              </option>
+            ))}
+          </Select>
+        </Field>
+        {preset && (
+          <>
+            <Field label="Klinger">
+              <Select value={chainringIdx} onChange={(e) => setChainringIdx(Number(e.target.value))}>
+                {preset.chainringOptions.map((teeth, i) => (
+                  <option key={i} value={i}>
+                    {chainringComboLabel(teeth)}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <Field label="Kassette">
+              <Select value={cassetteIdx} onChange={(e) => setCassetteIdx(Number(e.target.value))}>
+                {preset.cassetteOptions.map((teeth, i) => (
+                  <option key={i} value={i}>
+                    {cassetteLabel(teeth)}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+          </>
+        )}
+      </div>
+      {preset && (
+        <div className="mt-3 flex items-center gap-3">
+          <Button
+            variant="secondary"
+            onClick={() => onApply(preset.chainringOptions[chainringIdx], preset.cassetteOptions[cassetteIdx])}
+          >
+            Brug denne kombination
+          </Button>
+          {preset.note && <p className="text-xs text-slate-500">{preset.note}</p>}
+        </div>
+      )}
+    </Card>
+  )
+}
 
 export default function GearRatio() {
   const [chainringsRaw, setChainringsRaw] = useState('50, 34')
@@ -30,6 +125,13 @@ export default function GearRatio() {
       <SectionTitle subtitle="Se udvekslinger, meter-udrulning og hastighed ved given kadence for dine klinger og kassette.">
         Gearudregner
       </SectionTitle>
+
+      <GroupsetPicker
+        onApply={(chainringsTeeth, cogsTeeth) => {
+          setChainringsRaw(chainringsTeeth.join(', '))
+          setCogsRaw(cogsTeeth.join(', '))
+        }}
+      />
 
       <Card>
         <div className="grid gap-3 sm:grid-cols-2">
