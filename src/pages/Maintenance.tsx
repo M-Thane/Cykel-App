@@ -5,6 +5,7 @@ import { useAppStore, totalKmForBike, componentWearPct } from '../store/useAppSt
 import { DISCIPLINES, type Discipline } from '../types'
 import { Button, Card, EmptyState, Field, Input, Select, SectionTitle } from '../components/ui'
 import { fmtKm } from '../lib/format'
+import { BIKE_BRAND_LABELS, BIKE_MODEL_PRESETS, bikeModelLabel, type BikeMakeBrand } from '../lib/bikes'
 
 export default function Maintenance() {
   const bikes = useAppStore((s) => s.bikes)
@@ -51,6 +52,35 @@ export default function Maintenance() {
 
       {showForm && (
         <Card>
+          {BIKE_MODEL_PRESETS.length > 0 && (
+            <Field label="Vælg model (valgfri)" hint="Udfylder navn og type cykling automatisk — kan redigeres bagefter">
+              <Select
+                defaultValue=""
+                onChange={(e) => {
+                  const preset = BIKE_MODEL_PRESETS.find((p) => p.id === e.target.value)
+                  if (!preset) return
+                  setName(bikeModelLabel(preset))
+                  setDiscipline(preset.discipline)
+                }}
+                className="mb-3"
+              >
+                <option value="">— Vælg mærke og model —</option>
+                {(Object.keys(BIKE_BRAND_LABELS) as BikeMakeBrand[]).map((brand) => {
+                  const models = BIKE_MODEL_PRESETS.filter((p) => p.brand === brand)
+                  if (models.length === 0) return null
+                  return (
+                    <optgroup key={brand} label={BIKE_BRAND_LABELS[brand]}>
+                      {models.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.model} ({DISCIPLINES.find((d) => d.value === p.discipline)?.label})
+                        </option>
+                      ))}
+                    </optgroup>
+                  )
+                })}
+              </Select>
+            </Field>
+          )}
           <form onSubmit={submit} className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
             <Field label="Navn">
               <Input autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="fx Canyon Endurace" />

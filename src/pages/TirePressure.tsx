@@ -3,12 +3,63 @@ import { Info } from 'lucide-react'
 import { Button, Card, Field, Input, Select, SectionTitle } from '../components/ui'
 import { calcTirePressure, RIDE_STYLES, SURFACES, TUBE_TYPES, type RideStyle, type Surface, type TubeType } from '../lib/tirePressure'
 import { TIRE_PRESETS, tirePresetLabel, type TireDiscipline } from '../lib/tires'
+import { WHEEL_PRESETS, wheelPresetLabel, type WheelDiscipline } from '../lib/wheels'
 
 const TIRE_DISCIPLINES: { value: TireDiscipline; label: string }[] = [
   { value: 'landevej', label: 'Landevej' },
   { value: 'gravel', label: 'Gravel' },
   { value: 'mtb', label: 'MTB' },
 ]
+
+function WheelPicker({ onApply }: { onApply: (mm: number) => void }) {
+  const [discipline, setDiscipline] = useState<WheelDiscipline>('landevej')
+  const available = useMemo(() => WHEEL_PRESETS.filter((p) => p.discipline === discipline), [discipline])
+  const [presetId, setPresetId] = useState(available[0]?.id ?? '')
+  const preset = available.find((p) => p.id === presetId) ?? available[0]
+
+  useEffect(() => {
+    if (available.length && !available.some((p) => p.id === presetId)) {
+      setPresetId(available[0].id)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [discipline, available])
+
+  if (WHEEL_PRESETS.length === 0) return null
+
+  return (
+    <Card>
+      <p className="mb-3 text-sm text-slate-400">
+        Vælg et hjul fra DT Swiss, Zipp, Mavic, Fulcrum eller Roval for at udfylde indvendig fælgebredde automatisk.
+      </p>
+      <div className="grid gap-3 sm:grid-cols-3 sm:items-end">
+        <Field label="Type cykling">
+          <Select value={discipline} onChange={(e) => setDiscipline(e.target.value as WheelDiscipline)}>
+            {TIRE_DISCIPLINES.map((d) => (
+              <option key={d.value} value={d.value}>
+                {d.label}
+              </option>
+            ))}
+          </Select>
+        </Field>
+        <Field label="Hjul">
+          <Select value={preset?.id ?? ''} onChange={(e) => setPresetId(e.target.value)}>
+            {available.map((p) => (
+              <option key={p.id} value={p.id}>
+                {wheelPresetLabel(p)} ({p.internalWidthMm}mm)
+              </option>
+            ))}
+          </Select>
+        </Field>
+        {preset && (
+          <Button variant="secondary" onClick={() => onApply(preset.internalWidthMm)}>
+            Brug denne fælgbredde
+          </Button>
+        )}
+      </div>
+      {preset?.note && <p className="mt-2 text-xs text-slate-500">{preset.note}</p>}
+    </Card>
+  )
+}
 
 function TirePicker({ onApply }: { onApply: (mm: number) => void }) {
   const [discipline, setDiscipline] = useState<TireDiscipline>('landevej')
@@ -85,6 +136,7 @@ export default function TirePressure() {
   const [riderWeight, setRiderWeight] = useState('75')
   const [bikeWeight, setBikeWeight] = useState('9')
   const [tireWidth, setTireWidth] = useState('28')
+  const [rimWidth, setRimWidth] = useState('')
   const [surface, setSurface] = useState<Surface>('asfalt_normal')
   const [style, setStyle] = useState<RideStyle>('endurance')
   const [tube, setTube] = useState<TubeType>('tubeless')
@@ -93,6 +145,7 @@ export default function TirePressure() {
     const r = parseFloat(riderWeight.replace(',', '.'))
     const b = parseFloat(bikeWeight.replace(',', '.'))
     const w = parseFloat(tireWidth.replace(',', '.'))
+    const rim = rimWidth.trim() ? parseFloat(rimWidth.replace(',', '.')) : undefined
     if (!r || !w) return null
     return calcTirePressure({
       riderWeightKg: r,
@@ -101,8 +154,9 @@ export default function TirePressure() {
       surface,
       style,
       tube,
+      rimInternalWidthMm: rim,
     })
-  }, [riderWeight, bikeWeight, tireWidth, surface, style, tube])
+  }, [riderWeight, bikeWeight, tireWidth, rimWidth, surface, style, tube])
 
   return (
     <div className="flex flex-col gap-5">
@@ -111,6 +165,7 @@ export default function TirePressure() {
       </SectionTitle>
 
       <TirePicker onApply={(mm) => setTireWidth(String(mm))} />
+      <WheelPicker onApply={(mm) => setRimWidth(String(mm))} />
 
       <Card>
         <div className="grid gap-3 sm:grid-cols-2">
@@ -122,6 +177,9 @@ export default function TirePressure() {
           </Field>
           <Field label="Dækbredde (mm)" hint="Den faktiske monterede bredde, ikke kun tallet på dæksiden">
             <Input inputMode="decimal" value={tireWidth} onChange={(e) => setTireWidth(e.target.value)} />
+          </Field>
+          <Field label="Indvendig fælgebredde (mm)" hint="Valgfri — bredere fælg giver bredere monteret dæk">
+            <Input inputMode="decimal" placeholder="fx 21" value={rimWidth} onChange={(e) => setRimWidth(e.target.value)} />
           </Field>
           <Field label="Dæktype">
             <Select value={tube} onChange={(e) => setTube(e.target.value as TubeType)}>
@@ -165,6 +223,11 @@ export default function TirePressure() {
             <p className="mt-1 text-3xl font-semibold text-brand-400">{result.rearBar.toFixed(1)} bar</p>
             <p className="text-sm text-slate-500">{result.rearPsi} psi</p>
           </Card>
+          {rimWidth.trim() && Math.abs(result.effectiveWidthMm - parseFloat(tireWidth.replace(',', '.'))) >= 0.1 && (
+            <p className="sm:col-span-2 text-center text-xs text-slate-500">
+              Effektiv monteret bredde justeret til {result.effectiveWidthMm}mm ud fra fælgbredden
+            </p>
+          )}
         </div>
       )}
 
@@ -175,6 +238,10 @@ export default function TirePressure() {
             Dette er et <strong className="text-slate-300">vejledende udgangspunkt</strong> — ikke en eksakt videnskab. Bagdæk
             får typisk lidt højere tryk end fordæk pga. vægtfordelingen. Finjustér ±0,2-0,3 bar efter fornemmelse, og
             overskrid aldrig producentens min./maks.-tryk angivet på dæksiden.
+          </p>
+          <p className="mt-1.5">
+            Angiver du indvendig fælgebredde, justeres den effektive monterede dækbredde ca. 0,4mm pr. mm fælgen afviger
+            fra en 19mm-referencefælg — en bredere fælg giver et bredere, mere afrundet dæk.
           </p>
           {(result?.clampedLow || result?.clampedHigh) && (
             <p className="mt-1.5 text-amber-400">

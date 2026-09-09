@@ -2,12 +2,20 @@ import { useMemo, useState } from 'react'
 import { Info } from 'lucide-react'
 import { Card, Field, Input, Select, SectionTitle } from '../components/ui'
 import { calcBikeFit, FIT_DISCIPLINES, FLEXIBILITIES, type FitDiscipline, type Flexibility } from '../lib/bikeFit'
+import { BIKE_BRAND_LABELS, BIKE_MODEL_PRESETS, bikeModelLabel, recommendedSize, type BikeMakeBrand } from '../lib/bikes'
 
 export default function BikeFit() {
   const [height, setHeight] = useState('178')
   const [inseam, setInseam] = useState('82')
   const [discipline, setDiscipline] = useState<FitDiscipline>('landevej')
   const [flexibility, setFlexibility] = useState<Flexibility>('normal')
+  const [modelId, setModelId] = useState('')
+
+  const modelsForDiscipline = useMemo(
+    () => BIKE_MODEL_PRESETS.filter((p) => p.discipline === discipline),
+    [discipline],
+  )
+  const selectedModel = modelsForDiscipline.find((p) => p.id === modelId)
 
   const result = useMemo(() => {
     const h = parseFloat(height.replace(',', '.'))
@@ -15,6 +23,9 @@ export default function BikeFit() {
     if (!h || !i) return null
     return calcBikeFit({ heightCm: h, inseamCm: i, discipline, flexibility })
   }, [height, inseam, discipline, flexibility])
+
+  const heightCm = parseFloat(height.replace(',', '.'))
+  const modelSize = selectedModel && heightCm ? recommendedSize(selectedModel, heightCm) : undefined
 
   return (
     <div className="flex flex-col gap-5">
@@ -34,7 +45,13 @@ export default function BikeFit() {
             <Input inputMode="decimal" value={inseam} onChange={(e) => setInseam(e.target.value)} />
           </Field>
           <Field label="Type cykling">
-            <Select value={discipline} onChange={(e) => setDiscipline(e.target.value as FitDiscipline)}>
+            <Select
+              value={discipline}
+              onChange={(e) => {
+                setDiscipline(e.target.value as FitDiscipline)
+                setModelId('')
+              }}
+            >
               {FIT_DISCIPLINES.map((d) => (
                 <option key={d.value} value={d.value}>
                   {d.label}
@@ -51,8 +68,40 @@ export default function BikeFit() {
               ))}
             </Select>
           </Field>
+          {modelsForDiscipline.length > 0 && (
+            <Field label="Cykelmodel (valgfri)" hint="Viser mærkets egen anbefalede størrelse ud fra din højde">
+              <Select value={modelId} onChange={(e) => setModelId(e.target.value)}>
+                <option value="">— Vælg mærke og model —</option>
+                {(Object.keys(BIKE_BRAND_LABELS) as BikeMakeBrand[]).map((brand) => {
+                  const models = modelsForDiscipline.filter((p) => p.brand === brand)
+                  if (models.length === 0) return null
+                  return (
+                    <optgroup key={brand} label={BIKE_BRAND_LABELS[brand]}>
+                      {models.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.model}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )
+                })}
+              </Select>
+            </Field>
+          )}
         </div>
       </Card>
+
+      {selectedModel && modelSize && (
+        <Card>
+          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            Anbefalet størrelse — {bikeModelLabel(selectedModel)}
+          </p>
+          <p className="mt-1 text-2xl font-semibold text-brand-400">{modelSize.size}</p>
+          <p className="mt-1 text-xs text-slate-500">
+            Producentens egen guide for {heightCm}cm ({modelSize.heightMinCm}–{modelSize.heightMaxCm}cm)
+          </p>
+        </Card>
+      )}
 
       {result && (
         <div className="grid gap-3 sm:grid-cols-2">
