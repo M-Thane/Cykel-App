@@ -1,4 +1,4 @@
-export type WheelBrand = 'dtswiss' | 'zipp' | 'mavic' | 'fulcrum' | 'roval'
+export type WheelBrand = 'dtswiss' | 'zipp' | 'mavic' | 'fulcrum' | 'roval' | 'miche'
 export type WheelDiscipline = 'landevej' | 'gravel' | 'mtb'
 
 export const WHEEL_BRAND_LABELS: Record<WheelBrand, string> = {
@@ -7,6 +7,7 @@ export const WHEEL_BRAND_LABELS: Record<WheelBrand, string> = {
   mavic: 'Mavic',
   fulcrum: 'Fulcrum',
   roval: 'Roval',
+  miche: 'Miche',
 }
 
 export interface WheelPreset {
@@ -73,6 +74,20 @@ export const WHEEL_PRESETS: WheelPreset[] = [
   { id: 'roval-terraclxevo-gravel', brand: 'roval', model: 'Terra CLX Evo', discipline: 'gravel', internalWidthMm: 30, hookless: true, tubelessReady: true, note: 'Bred/aggressiv' },
   { id: 'roval-controlsl-mtb', brand: 'roval', model: 'Control SL', discipline: 'mtb', internalWidthMm: 29, hookless: true, tubelessReady: true, note: 'XC, karbon' },
   { id: 'roval-traversesl-mtb', brand: 'roval', model: 'Traverse SL', discipline: 'mtb', internalWidthMm: 30, hookless: true, tubelessReady: true, note: 'Trail/enduro, karbon' },
+
+  // ---------------------------------------------------------------------
+  // Miche
+  // ---------------------------------------------------------------------
+  { id: 'miche-kleosrd3650-landevej', brand: 'miche', model: 'Kleos RD 36/50', discipline: 'landevej', internalWidthMm: 21, hookless: false, tubelessReady: true, note: 'Karbon, valgte bevidst hook frem for hookless' },
+  { id: 'miche-kleosrd62-landevej', brand: 'miche', model: 'Kleos RD 62', discipline: 'landevej', internalWidthMm: 23, hookless: false, tubelessReady: true, note: 'Dybere/bredere variant af Kleos' },
+  { id: 'miche-swrevo50-landevej', brand: 'miche', model: 'SWR Evo 50 DX', discipline: 'landevej', internalWidthMm: 22, hookless: false, tubelessReady: true, note: 'Ældre generation kan have 17mm — tjek modelår' },
+  { id: 'miche-devard-landevej', brand: 'miche', model: 'Deva RD 52/62', discipline: 'landevej', internalWidthMm: 23, hookless: false, tubelessReady: true, note: 'Flagskib, aero' },
+  { id: 'miche-graffaero48-gravel', brand: 'miche', model: 'Graff Aero 48', discipline: 'gravel', internalWidthMm: 27, hookless: true, tubelessReady: true, note: 'Karbon race-grus' },
+  { id: 'miche-graffallroad-gravel', brand: 'miche', model: 'Graff Allroad TLR', discipline: 'gravel', internalWidthMm: 23, hookless: false, tubelessReady: true, note: 'Karbon all-road/grus' },
+  { id: 'miche-graffxl-gravel', brand: 'miche', model: 'Graff XL TLR', discipline: 'gravel', internalWidthMm: 24, hookless: false, tubelessReady: true, note: 'Alu, adventure-grus' },
+  { id: 'miche-k1rd-mtb', brand: 'miche', model: 'K1 RD', discipline: 'mtb', internalWidthMm: 30, hookless: true, tubelessReady: true, note: 'Karbon XC/marathon race' },
+  { id: 'miche-k4-mtb', brand: 'miche', model: 'K4', discipline: 'mtb', internalWidthMm: 25, hookless: true, tubelessReady: true, note: 'Karbon trail/all-mountain' },
+  { id: 'miche-966spr-mtb', brand: 'miche', model: '966 SPR', discipline: 'mtb', internalWidthMm: 25, hookless: true, tubelessReady: true, note: 'Alu XC/trail' },
 ]
 
 export function wheelPresetLabel(p: WheelPreset): string {
