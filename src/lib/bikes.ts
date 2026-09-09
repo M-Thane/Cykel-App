@@ -343,12 +343,12 @@ export const BIKE_MODEL_PRESETS: BikeModelPreset[] = [
   // ===========================================================================
   // Wilier
   // ===========================================================================
-  model('wilier-filanteslr-landevej', 'wilier', 'Filante SLR', 'landevej', 'Aero race-flagskib'),
+  model('wilier-filanteslr-landevej', 'wilier', 'Filante SLR ID2', 'landevej', 'Aero race-flagskib'),
   model('wilier-verticaleslr-landevej', 'wilier', 'Verticale SLR', 'landevej', 'Let klatring'),
   model('wilier-granturismoslr-landevej', 'wilier', 'Granturismo SLR', 'landevej', 'Endurance/komfort'),
   model('wilier-cento10sl-landevej', 'wilier', 'Cento10 SL', 'landevej', 'Aero race, mellemklasse'),
   model('wilier-garda-landevej', 'wilier', 'Garda', 'landevej', 'Entry-level karbon'),
-  model('wilier-raveslr-gravel', 'wilier', 'Rave SLR', 'gravel', 'Aero race-grus'),
+  model('wilier-raveslr-gravel', 'wilier', 'Rave SLR ID2', 'gravel', 'Aero race-grus'),
   model('wilier-jena-gravel', 'wilier', 'Jena', 'gravel', 'All-road/alsidig, 700c og 650b'),
   model('wilier-jareen-gravel', 'wilier', 'Jareen', 'gravel', 'Entry-level alu'),
   model('wilier-jaroon-gravel', 'wilier', 'Jaroon', 'gravel', 'All-road/adventure, alu'),
