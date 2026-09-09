@@ -1,7 +1,85 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Info } from 'lucide-react'
-import { Card, Field, Input, Select, SectionTitle } from '../components/ui'
+import { Button, Card, Field, Input, Select, SectionTitle } from '../components/ui'
 import { calcTirePressure, RIDE_STYLES, SURFACES, TUBE_TYPES, type RideStyle, type Surface, type TubeType } from '../lib/tirePressure'
+import { TIRE_PRESETS, tirePresetLabel, type TireDiscipline } from '../lib/tires'
+
+const TIRE_DISCIPLINES: { value: TireDiscipline; label: string }[] = [
+  { value: 'landevej', label: 'Landevej' },
+  { value: 'gravel', label: 'Gravel' },
+  { value: 'mtb', label: 'MTB' },
+]
+
+function TirePicker({ onApply }: { onApply: (mm: number) => void }) {
+  const [discipline, setDiscipline] = useState<TireDiscipline>('landevej')
+  const available = useMemo(() => TIRE_PRESETS.filter((p) => p.discipline === discipline), [discipline])
+  const [presetId, setPresetId] = useState(available[0]?.id ?? '')
+  const preset = available.find((p) => p.id === presetId) ?? available[0]
+  const [widthIdx, setWidthIdx] = useState(0)
+
+  useEffect(() => {
+    if (available.length && !available.some((p) => p.id === presetId)) {
+      setPresetId(available[0].id)
+    }
+    setWidthIdx(0)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [discipline, available])
+
+  if (TIRE_PRESETS.length === 0) return null
+
+  return (
+    <Card>
+      <p className="mb-3 text-sm text-slate-400">
+        Vælg en dækmodel fra Continental, Schwalbe, Pirelli, Vittoria eller Specialized for at udfylde bredden automatisk.
+      </p>
+      <div className="grid gap-3 sm:grid-cols-3 sm:items-end">
+        <Field label="Type cykling">
+          <Select value={discipline} onChange={(e) => setDiscipline(e.target.value as TireDiscipline)}>
+            {TIRE_DISCIPLINES.map((d) => (
+              <option key={d.value} value={d.value}>
+                {d.label}
+              </option>
+            ))}
+          </Select>
+        </Field>
+        <Field label="Dækmodel">
+          <Select value={preset?.id ?? ''} onChange={(e) => setPresetId(e.target.value)}>
+            {available.map((p) => (
+              <option key={p.id} value={p.id}>
+                {tirePresetLabel(p)}
+              </option>
+            ))}
+          </Select>
+        </Field>
+        {preset && (
+          <Field label="Bredde">
+            <Select value={widthIdx} onChange={(e) => setWidthIdx(Number(e.target.value))}>
+              {preset.widths.map((w, i) => (
+                <option key={i} value={i}>
+                  {w.label}
+                </option>
+              ))}
+            </Select>
+          </Field>
+        )}
+      </div>
+      {preset && (
+        <div className="mt-3 flex items-center gap-3">
+          <Button variant="secondary" onClick={() => onApply(preset.widths[widthIdx].mm)}>
+            Brug denne bredde
+          </Button>
+          {(preset.tubelessReady || preset.note) && (
+            <p className="text-xs text-slate-500">
+              {preset.tubelessReady ? 'Tubeless-ready' : ''}
+              {preset.tubelessReady && preset.note ? ' · ' : ''}
+              {preset.note}
+            </p>
+          )}
+        </div>
+      )}
+    </Card>
+  )
+}
 
 export default function TirePressure() {
   const [riderWeight, setRiderWeight] = useState('75')
@@ -31,6 +109,8 @@ export default function TirePressure() {
       <SectionTitle subtitle="Find et vejledende udgangspunkt for dæktryk baseret på vægt, dækbredde, underlag og cykeltype.">
         Dæktryksberegner
       </SectionTitle>
+
+      <TirePicker onApply={(mm) => setTireWidth(String(mm))} />
 
       <Card>
         <div className="grid gap-3 sm:grid-cols-2">
