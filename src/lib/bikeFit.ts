@@ -69,3 +69,38 @@ export function calcBikeFit(input: BikeFitInput): BikeFitResult {
     handlebarDrop: HANDLEBAR_DROP[input.discipline][input.flexibility],
   }
 }
+
+export interface StackReachBand {
+  min: number
+  max: number
+}
+
+// A bike's stack-to-reach ratio (STR) is a well-known industry shorthand for how
+// aggressive vs. relaxed its geometry is — aero race bikes typically sit ~1.35-1.48,
+// relaxed endurance/gravel bikes ~1.50-1.75. These target bands are a rule-of-thumb
+// mapping from rider flexibility to a comfortable STR zone, not a lab-measured fit —
+// use them to compare sizes/models against each other, not as an absolute prescription.
+const STR_BANDS: Record<'landevej' | 'gravel', Record<Flexibility, StackReachBand>> = {
+  landevej: {
+    stiv: { min: 1.55, max: 1.68 },
+    normal: { min: 1.45, max: 1.58 },
+    fleksibel: { min: 1.35, max: 1.48 },
+  },
+  gravel: {
+    stiv: { min: 1.6, max: 1.75 },
+    normal: { min: 1.5, max: 1.63 },
+    fleksibel: { min: 1.4, max: 1.53 },
+  },
+}
+
+/** Target stack-to-reach ratio band for this rider — null for MTB, where STR isn't a meaningful fit metric. */
+export function targetStrBand(discipline: FitDiscipline, flexibility: Flexibility): StackReachBand | null {
+  if (discipline === 'mtb') return null
+  return STR_BANDS[discipline][flexibility]
+}
+
+/** Handlebar width (center-to-center, mm) should roughly match shoulder width — a standard, widely-cited rule of thumb. */
+export function recommendedHandlebarWidthMm(shoulderWidthCm: number): [number, number] {
+  const centerMm = shoulderWidthCm * 10
+  return [Math.round(centerMm - 20), Math.round(centerMm + 20)]
+}
