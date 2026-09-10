@@ -54,3 +54,50 @@ export function calcGearMatrix(
     }),
   )
 }
+
+/** RPM needed to hold a given speed in this gear. */
+export function requiredCadenceRpm(speedKmh: number, developmentM: number): number {
+  if (developmentM <= 0) return 0
+  return (speedKmh * 1000) / (developmentM * 60)
+}
+
+/** Speed reached in this gear at a given cadence. */
+export function speedAtCadenceKmh(developmentM: number, cadenceRpm: number): number {
+  return (developmentM * cadenceRpm * 60) / 1000
+}
+
+export interface GearRangeSummary {
+  easiest: GearCell
+  hardest: GearCell
+}
+
+/** The lowest and highest gear in a matrix, by meters of development (easiest = least, hardest = most). */
+export function gearRangeSummary(matrix: GearCell[][]): GearRangeSummary | null {
+  const flat = matrix.flat()
+  if (flat.length === 0) return null
+  let easiest = flat[0]
+  let hardest = flat[0]
+  for (const cell of flat) {
+    if (cell.developmentM < easiest.developmentM) easiest = cell
+    if (cell.developmentM > hardest.developmentM) hardest = cell
+  }
+  return { easiest, hardest }
+}
+
+export interface CassetteStep {
+  fromCog: number
+  toCog: number
+  percentJump: number
+}
+
+/** Percentage jump in tooth count between each pair of adjacent cogs (smallest to largest). */
+export function calcCassetteSteps(cogs: number[]): CassetteStep[] {
+  const sorted = [...cogs].sort((a, b) => a - b)
+  const steps: CassetteStep[] = []
+  for (let i = 1; i < sorted.length; i++) {
+    const fromCog = sorted[i - 1]
+    const toCog = sorted[i]
+    steps.push({ fromCog, toCog, percentJump: ((toCog - fromCog) / fromCog) * 100 })
+  }
+  return steps
+}
