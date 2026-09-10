@@ -4,19 +4,61 @@ export interface WheelPreset {
   circumferenceMm: number
 }
 
+// ISO bead seat diameters (mm). 29" MTB shares 700c's 622mm BSD; 27.5" MTB shares
+// 650b's 584mm BSD — only the tire, not the rim, differs between those pairs.
+const BSD_700C_MM = 622
+const BSD_650B_MM = 584
+const BSD_26_MM = 559
+const MM_PER_INCH = 25.4
+
+/**
+ * Wheel circumference from bead seat diameter + tire width, via circumference ≈
+ * π × (BSD + 2 × tire height). Tire height is approximated as width × an aspect-ratio
+ * factor that varies a bit by tire category (narrower/road-ish tires run closer to a
+ * 1:1 height:width profile than wide, knobby ones) — a standard simplification, and
+ * the same one implicit in most published tire-circumference reference charts.
+ */
+function circumferenceMm(bsdMm: number, widthMm: number, aspect: number): number {
+  return Math.round(Math.PI * (bsdMm + 2 * widthMm * aspect))
+}
+
+// Same tire widths offered in the dæktryksberegner's dækvælger (see lib/tires.ts),
+// so every width choosable there is also choosable here.
+const LANDEVEJ_WIDTHS_MM = [23, 24, 25, 26, 28, 30, 32, 34, 35, 38, 42]
+const GRAVEL_WIDTHS_MM = [35, 40, 45, 50, 55]
+const MTB_WIDTHS_IN = [2.0, 2.2, 2.25, 2.3, 2.35, 2.4, 2.6]
+
 export const WHEEL_PRESETS: WheelPreset[] = [
-  { value: '700x23', label: '700x23c (racer)', circumferenceMm: 2096 },
-  { value: '700x25', label: '700x25c (racer)', circumferenceMm: 2105 },
-  { value: '700x28', label: '700x28c (racer/endurance)', circumferenceMm: 2136 },
-  { value: '700x32', label: '700x32c (allroad)', circumferenceMm: 2155 },
-  { value: '700x35', label: '700x35c (gravel)', circumferenceMm: 2168 },
-  { value: '700x40', label: '700x40c (gravel)', circumferenceMm: 2200 },
-  { value: '650bx47', label: '650b x 47mm (gravel)', circumferenceMm: 2090 },
-  { value: '29x2.2', label: '29" x 2.2" (MTB)', circumferenceMm: 2288 },
-  { value: '29x2.4', label: '29" x 2.4" (MTB)', circumferenceMm: 2326 },
-  { value: '27.5x2.3', label: '27.5" x 2.3" (MTB)', circumferenceMm: 2168 },
-  { value: '27.5x2.8', label: '27.5"+ x 2.8" (MTB plus)', circumferenceMm: 2232 },
-  { value: '26x2.1', label: '26" x 2.1" (MTB)', circumferenceMm: 2026 },
+  ...LANDEVEJ_WIDTHS_MM.map((w) => ({
+    value: `700x${w}-landevej`,
+    label: `700x${w}c (landevej)`,
+    circumferenceMm: circumferenceMm(BSD_700C_MM, w, 0.97),
+  })),
+  ...GRAVEL_WIDTHS_MM.map((w) => ({
+    value: `700x${w}-gravel`,
+    label: `700x${w}c (gravel)`,
+    circumferenceMm: circumferenceMm(BSD_700C_MM, w, 0.97),
+  })),
+  ...GRAVEL_WIDTHS_MM.map((w) => ({
+    value: `650bx${w}`,
+    label: `650b x ${w}mm (gravel)`,
+    circumferenceMm: circumferenceMm(BSD_650B_MM, w, 0.87),
+  })),
+  ...MTB_WIDTHS_IN.map((w) => ({
+    value: `29x${w}`,
+    label: `29" x ${w}" (MTB)`,
+    circumferenceMm: circumferenceMm(BSD_700C_MM, w * MM_PER_INCH, 0.96),
+  })),
+  ...MTB_WIDTHS_IN.map((w) => ({
+    value: `27.5x${w}`,
+    label: `27.5" x ${w}" (MTB)`,
+    circumferenceMm: circumferenceMm(BSD_650B_MM, w * MM_PER_INCH, 0.9),
+  })),
+  ...MTB_WIDTHS_IN.map((w) => ({
+    value: `26x${w}`,
+    label: `26" x ${w}" (MTB, legacy)`,
+    circumferenceMm: circumferenceMm(BSD_26_MM, w * MM_PER_INCH, 0.81),
+  })),
   { value: 'custom', label: 'Brugerdefineret (indtast mm)', circumferenceMm: 2105 },
 ]
 

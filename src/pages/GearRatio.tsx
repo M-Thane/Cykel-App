@@ -116,7 +116,7 @@ function cadenceComfortClass(rpm: number): string {
 export default function GearRatio() {
   const [chainringsRaw, setChainringsRaw] = useState('50, 34')
   const [cogsRaw, setCogsRaw] = useState('11, 13, 15, 17, 19, 21, 24, 28, 32')
-  const [wheelPreset, setWheelPreset] = useState('700x28')
+  const [wheelPreset, setWheelPreset] = useState('700x28-landevej')
   const [customMm, setCustomMm] = useState('2105')
   const [crankLength, setCrankLength] = useState('172.5')
   const [cadence, setCadence] = useState('90')
