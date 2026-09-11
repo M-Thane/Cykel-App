@@ -134,6 +134,58 @@ export const BIKE_GEOMETRY: BikeGeometryPreset[] = [
     modelId: 'wilier-filanteslr-landevej',
     sizes: sizes(['XS', 505, 374], ['S', 523, 380], ['M', 541, 386], ['L', 559, 393], ['XL', 577, 400], ['XXL', 595, 408]),
   },
+  {
+    modelId: 'wilier-verticaleslr-landevej',
+    sizes: sizes(['XS', 505, 373], ['S', 523, 380], ['M', 541, 386], ['L', 559, 393], ['XL', 577, 400], ['XXL', 595, 408]),
+  },
+  {
+    modelId: 'wilier-granturismoslr-landevej',
+    sizes: sizes(['XS', 527, 369], ['S', 546, 374], ['M', 566, 379], ['L', 586, 384], ['XL', 604, 389], ['XXL', 625, 395]),
+  },
+  {
+    modelId: 'wilier-cento10sl-landevej',
+    sizes: sizes(['XS', 503, 378], ['S', 519, 382], ['M', 536, 387], ['L', 554, 391], ['XL', 571, 396], ['XXL', 589, 400]),
+    note: 'Tandtal (mm) er bekræftet, men bogstav-mærkningen XS-XXL er udledt af Wilier-konventionen, ikke bekræftet direkte for denne model',
+  },
+  {
+    modelId: 'wilier-garda-landevej',
+    sizes: sizes(['XS', 515, 373], ['S', 531, 378], ['M', 548, 383], ['L', 566, 388], ['XL', 584, 393], ['XXL', 602, 398]),
+  },
+  {
+    modelId: 'wilier-raveslr-gravel',
+    sizes: sizes(['XS', 532, 375], ['S', 546, 381], ['M', 561, 387], ['L', 579, 393], ['XL', 597, 400], ['XXL', 617, 408]),
+  },
+  {
+    modelId: 'wilier-jena-gravel',
+    sizes: sizes(['XS', 531, 363], ['S', 556, 372], ['M', 582, 382], ['L', 608, 391], ['XL', 633, 401]),
+    note: 'Samme ramme uanset om den opsættes med 700c eller 650b hjul',
+  },
+  {
+    modelId: 'wilier-jareen-gravel',
+    sizes: sizes(['XS', 524, 368], ['S', 546, 376], ['M', 566, 383], ['L', 585, 390], ['XL', 604, 396]),
+  },
+  {
+    modelId: 'wilier-jaroon-gravel',
+    sizes: sizes(['S', 555, 373], ['M', 576, 380], ['L', 595, 387], ['XL', 614, 393]),
+  },
+  {
+    modelId: 'wilier-adlar-gravel',
+    sizes: sizes(['XS', 538, 395], ['S', 562, 404], ['M', 586, 413], ['L', 610, 422], ['XL', 634, 431]),
+  },
+  {
+    modelId: 'wilier-urtaslr-mtb',
+    sizes: sizes(['S', 593, 400], ['M', 596, 426], ['L', 604, 453], ['XL', 613, 480]),
+    note: 'Bevidst flad stack på tværs af størrelser (XC-racedesign) — reach gør det meste af størrelsesarbejdet',
+  },
+  {
+    modelId: 'wilier-urtamaxslr-mtb',
+    sizes: sizes(['S', 598, 415], ['M', 598, 443], ['L', 602, 471], ['XL', 613, 500]),
+    note: 'Bevidst flad stack på tværs af størrelser (XC-racedesign) — reach gør det meste af størrelsesarbejdet',
+  },
+  {
+    modelId: 'wilier-usmaslr-mtb',
+    sizes: sizes(['S', 597, 405], ['M', 608, 430], ['L', 619, 454], ['XL', 630, 478]),
+  },
 ]
 
 export function geometryFor(modelId: string): BikeGeometryPreset | undefined {
