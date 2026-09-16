@@ -1,6 +1,11 @@
+import type { Dict } from './i18n/da'
+
 export interface WheelPreset {
   value: string
-  label: string
+  /** Language-neutral size label, e.g. "700x25c", "650b x 40mm", "29\" x 2.2\"". */
+  sizeLabel: string
+  category: 'landevej' | 'gravel' | 'mtb' | 'custom'
+  legacy?: boolean
   circumferenceMm: number
 }
 
@@ -31,36 +36,49 @@ const MTB_WIDTHS_IN = [2.0, 2.2, 2.25, 2.3, 2.35, 2.4, 2.6]
 export const WHEEL_PRESETS: WheelPreset[] = [
   ...LANDEVEJ_WIDTHS_MM.map((w) => ({
     value: `700x${w}-landevej`,
-    label: `700x${w}c (landevej)`,
+    sizeLabel: `700x${w}c`,
+    category: 'landevej' as const,
     circumferenceMm: circumferenceMm(BSD_700C_MM, w, 0.97),
   })),
   ...GRAVEL_WIDTHS_MM.map((w) => ({
     value: `700x${w}-gravel`,
-    label: `700x${w}c (gravel)`,
+    sizeLabel: `700x${w}c`,
+    category: 'gravel' as const,
     circumferenceMm: circumferenceMm(BSD_700C_MM, w, 0.97),
   })),
   ...GRAVEL_WIDTHS_MM.map((w) => ({
     value: `650bx${w}`,
-    label: `650b x ${w}mm (gravel)`,
+    sizeLabel: `650b x ${w}mm`,
+    category: 'gravel' as const,
     circumferenceMm: circumferenceMm(BSD_650B_MM, w, 0.87),
   })),
   ...MTB_WIDTHS_IN.map((w) => ({
     value: `29x${w}`,
-    label: `29" x ${w}" (MTB)`,
+    sizeLabel: `29" x ${w}"`,
+    category: 'mtb' as const,
     circumferenceMm: circumferenceMm(BSD_700C_MM, w * MM_PER_INCH, 0.96),
   })),
   ...MTB_WIDTHS_IN.map((w) => ({
     value: `27.5x${w}`,
-    label: `27.5" x ${w}" (MTB)`,
+    sizeLabel: `27.5" x ${w}"`,
+    category: 'mtb' as const,
     circumferenceMm: circumferenceMm(BSD_650B_MM, w * MM_PER_INCH, 0.9),
   })),
   ...MTB_WIDTHS_IN.map((w) => ({
     value: `26x${w}`,
-    label: `26" x ${w}" (MTB, legacy)`,
+    sizeLabel: `26" x ${w}"`,
+    category: 'mtb' as const,
+    legacy: true,
     circumferenceMm: circumferenceMm(BSD_26_MM, w * MM_PER_INCH, 0.81),
   })),
-  { value: 'custom', label: 'Brugerdefineret (indtast mm)', circumferenceMm: 2105 },
+  { value: 'custom', sizeLabel: '', category: 'custom' as const, circumferenceMm: 2105 },
 ]
+
+export function wheelPresetDisplayLabel(p: WheelPreset, t: Dict): string {
+  if (p.category === 'custom') return t.gearRatio.wheelPresets.custom
+  const cat = t.disciplines[p.category]
+  return p.legacy ? `${p.sizeLabel} (${cat}, ${t.gearRatio.wheelPresets.legacy})` : `${p.sizeLabel} (${cat})`
+}
 
 export function parseTeethList(raw: string): number[] {
   return raw

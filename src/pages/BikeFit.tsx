@@ -12,8 +12,10 @@ import {
 } from '../lib/bikeFit'
 import { BIKE_BRAND_LABELS, BIKE_MODEL_PRESETS, bikeModelLabel, recommendedSize, type BikeMakeBrand } from '../lib/bikes'
 import { geometryFor, stackReachRatio } from '../lib/bikeGeometry'
+import { useLang } from '../lib/i18n/context'
 
 export default function BikeFit() {
+  const { t } = useLang()
   const [height, setHeight] = useState('178')
   const [inseam, setInseam] = useState('82')
   const [torso, setTorso] = useState('')
@@ -49,31 +51,26 @@ export default function BikeFit() {
 
   return (
     <div className="flex flex-col gap-5">
-      <SectionTitle subtitle="Få et vejledende udgangspunkt for sadelhøjde, rammestørrelse og styrposition — og sammenlign mod cyklens egen geometri.">
-        Bikefit-hjælp
-      </SectionTitle>
+      <SectionTitle subtitle={t.bikeFit.subtitle}>{t.bikeFit.title}</SectionTitle>
 
       <Card>
         <div className="grid gap-3 sm:grid-cols-2">
-          <Field label="Højde (cm)">
+          <Field label={t.bikeFit.form.height}>
             <Input inputMode="decimal" value={height} onChange={(e) => setHeight(e.target.value)} />
           </Field>
-          <Field
-            label="Skridtmål / inseam (cm)"
-            hint="Stå med ryggen mod en væg, pres en bog op i skridtet og mål fra gulv til bogens overkant"
-          >
+          <Field label={t.bikeFit.form.inseam} hint={t.bikeFit.form.inseamHint}>
             <Input inputMode="decimal" value={inseam} onChange={(e) => setInseam(e.target.value)} />
           </Field>
-          <Field label="Overkropslængde (cm, valgfri)" hint="Skulder (akromion) til sæde, siddende">
-            <Input inputMode="decimal" placeholder="fx 58" value={torso} onChange={(e) => setTorso(e.target.value)} />
+          <Field label={t.bikeFit.form.torso} hint={t.bikeFit.form.torsoHint}>
+            <Input inputMode="decimal" placeholder={`${t.common.eg} 58`} value={torso} onChange={(e) => setTorso(e.target.value)} />
           </Field>
-          <Field label="Armlængde (cm, valgfri)" hint="Skulder til håndled, arm strakt">
-            <Input inputMode="decimal" placeholder="fx 62" value={arm} onChange={(e) => setArm(e.target.value)} />
+          <Field label={t.bikeFit.form.arm} hint={t.bikeFit.form.armHint}>
+            <Input inputMode="decimal" placeholder={`${t.common.eg} 62`} value={arm} onChange={(e) => setArm(e.target.value)} />
           </Field>
-          <Field label="Skulderbredde (cm, valgfri)" hint="Yderside til yderside af skulderleddene">
-            <Input inputMode="decimal" placeholder="fx 42" value={shoulder} onChange={(e) => setShoulder(e.target.value)} />
+          <Field label={t.bikeFit.form.shoulder} hint={t.bikeFit.form.shoulderHint}>
+            <Input inputMode="decimal" placeholder={`${t.common.eg} 42`} value={shoulder} onChange={(e) => setShoulder(e.target.value)} />
           </Field>
-          <Field label="Type cykling">
+          <Field label={t.bikeFit.form.discipline}>
             <Select
               value={discipline}
               onChange={(e) => {
@@ -83,27 +80,24 @@ export default function BikeFit() {
             >
               {FIT_DISCIPLINES.map((d) => (
                 <option key={d.value} value={d.value}>
-                  {d.label}
+                  {t.disciplines[d.value]}
                 </option>
               ))}
             </Select>
           </Field>
-          <Field label="Smidighed">
+          <Field label={t.bikeFit.form.flexibility}>
             <Select value={flexibility} onChange={(e) => setFlexibility(e.target.value as Flexibility)}>
               {FLEXIBILITIES.map((f) => (
                 <option key={f.value} value={f.value}>
-                  {f.label}
+                  {t.flexibilities[f.value]}
                 </option>
               ))}
             </Select>
           </Field>
           {modelsForDiscipline.length > 0 && (
-            <Field
-              label="Cykel du har eller overvejer (valgfri)"
-              hint="Viser mærkets anbefalede størrelse, og cyklens egen geometri hvis den findes"
-            >
+            <Field label={t.bikeFit.form.model} hint={t.bikeFit.form.modelHint}>
               <Select value={modelId} onChange={(e) => setModelId(e.target.value)}>
-                <option value="">— Vælg mærke og model —</option>
+                <option value="">{t.bikeFit.form.chooseBrandModel}</option>
                 {(Object.keys(BIKE_BRAND_LABELS) as BikeMakeBrand[]).map((brand) => {
                   const models = modelsForDiscipline.filter((p) => p.brand === brand)
                   if (models.length === 0) return null
@@ -126,19 +120,17 @@ export default function BikeFit() {
       {selectedModel && (
         <Card>
           <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-            Anbefalet størrelse — {bikeModelLabel(selectedModel)}
+            {t.bikeFit.sizeCard.recommendedSize(bikeModelLabel(selectedModel))}
           </p>
           {modelSize ? (
             <>
               <p className="mt-1 text-2xl font-semibold text-brand-400">{modelSize.size}</p>
               <p className="mt-1 text-xs text-slate-500">
-                Producentens egen guide for {heightCm}cm ({modelSize.heightMinCm}–{modelSize.heightMaxCm}cm)
+                {t.bikeFit.sizeCard.manufacturerGuide(String(heightCm), modelSize.heightMinCm, modelSize.heightMaxCm)}
               </p>
             </>
           ) : (
-            <p className="mt-1 text-sm text-slate-400">
-              Ingen bekræftet størrelsestabel for denne model endnu — brug det generelle skøn nedenfor i stedet.
-            </p>
+            <p className="mt-1 text-sm text-slate-400">{t.bikeFit.sizeCard.noSizeChart}</p>
           )}
           {selectedModel.note && <p className="mt-1 text-xs text-slate-500">{selectedModel.note}</p>}
         </Card>
@@ -149,21 +141,21 @@ export default function BikeFit() {
           <SectionTitle
             subtitle={
               strBand
-                ? `Stack/reach-forhold (STR) per størrelse. Din smidighed peger på en STR mellem ${strBand.min.toFixed(2)}–${strBand.max.toFixed(2)} — grøn markering rammer den zone.`
-                : 'Stack og reach per størrelse, hentet fra producentens egen geometritabel.'
+                ? t.bikeFit.geometry.subtitleWithBand(strBand.min.toFixed(2), strBand.max.toFixed(2))
+                : t.bikeFit.geometry.subtitleNoBand
             }
           >
-            Geometri — {bikeModelLabel(selectedModel)}
+            {t.bikeFit.geometry.title(bikeModelLabel(selectedModel))}
           </SectionTitle>
           <div className="overflow-x-auto">
             <table className="w-full min-w-max border-collapse text-sm">
               <thead>
                 <tr className="text-left text-xs font-medium text-slate-500">
-                  <th className="px-2 py-1.5">Str.</th>
-                  <th className="px-2 py-1.5">Stack</th>
-                  <th className="px-2 py-1.5">Reach</th>
-                  <th className="px-2 py-1.5">STR</th>
-                  {strBand && <th className="px-2 py-1.5">Match</th>}
+                  <th className="px-2 py-1.5">{t.bikeFit.geometry.size}</th>
+                  <th className="px-2 py-1.5">{t.bikeFit.geometry.stack}</th>
+                  <th className="px-2 py-1.5">{t.bikeFit.geometry.reach}</th>
+                  <th className="px-2 py-1.5">{t.bikeFit.geometry.str}</th>
+                  {strBand && <th className="px-2 py-1.5">{t.bikeFit.geometry.match}</th>}
                 </tr>
               </thead>
               <tbody>
@@ -175,13 +167,13 @@ export default function BikeFit() {
                     <tr key={s.size} className={`border-t border-slate-800 ${isRecommended ? 'bg-brand-900/20' : ''}`}>
                       <td className="px-2 py-1.5 font-medium text-slate-100">
                         {s.size}
-                        {isRecommended && <span className="ml-1.5 text-xs text-brand-400">(højde-match)</span>}
+                        {isRecommended && <span className="ml-1.5 text-xs text-brand-400">({t.bikeFit.geometry.heightMatch})</span>}
                       </td>
                       <td className="px-2 py-1.5 text-slate-300">{s.stackMm}mm</td>
                       <td className="px-2 py-1.5 text-slate-300">{s.reachMm}mm</td>
                       <td className="px-2 py-1.5 text-slate-300">{str.toFixed(2)}</td>
                       {strBand && (
-                        <td className="px-2 py-1.5">{inBand ? <Badge tone="ok">God match</Badge> : <Badge>—</Badge>}</td>
+                        <td className="px-2 py-1.5">{inBand ? <Badge tone="ok">{t.bikeFit.geometry.goodMatch}</Badge> : <Badge>—</Badge>}</td>
                       )}
                     </tr>
                   )
@@ -190,10 +182,7 @@ export default function BikeFit() {
             </table>
           </div>
           {torsoPlusArm && (
-            <p className="mt-3 text-xs text-slate-500">
-              Din overkrop + arm: {torsoPlusArm.toFixed(0)}cm — det tal en professionel bikefitter bruger sammen med
-              reach-værdierne ovenfor. Appen omregner det ikke til et præcist mm-mål, da det kræver en fysisk fitting.
-            </p>
+            <p className="mt-3 text-xs text-slate-500">{t.bikeFit.geometry.torsoArmNote(torsoPlusArm.toFixed(0))}</p>
           )}
           {geometry.note && <p className="mt-1 text-xs text-slate-500">{geometry.note}</p>}
         </Card>
@@ -202,39 +191,39 @@ export default function BikeFit() {
       {result && (
         <div className="grid gap-3 sm:grid-cols-2">
           <Card>
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Sadelhøjde (LeMond-metode)</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{t.bikeFit.results.saddleLemond}</p>
             <p className="mt-1 text-2xl font-semibold text-brand-400">{result.saddleHeightLemondCm} cm</p>
-            <p className="mt-1 text-xs text-slate-500">Fra midten af krankboksen til sadeltoppen, målt langs sadelrøret</p>
+            <p className="mt-1 text-xs text-slate-500">{t.bikeFit.results.saddleLemondNote}</p>
           </Card>
           <Card>
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Sadelhøjde (Holmes-metode)</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{t.bikeFit.results.saddleHolmes}</p>
             <p className="mt-1 text-2xl font-semibold text-slate-200">{result.saddleHeightHolmesCm} cm</p>
-            <p className="mt-1 text-xs text-slate-500">Fra pedalaksel (i bund) til sadeltop — brug som krydstjek</p>
+            <p className="mt-1 text-xs text-slate-500">{t.bikeFit.results.saddleHolmesNote}</p>
           </Card>
           <Card>
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Rammestørrelse (generelt skøn)</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{t.bikeFit.results.frameSize}</p>
             <p className="mt-1 text-2xl font-semibold text-slate-200">
               {result.frameLetter}
               {result.frameCmRange && <span className="ml-2 text-base text-slate-500">({result.frameCmRange} cm)</span>}
             </p>
-            <p className="mt-1 text-xs text-slate-500">Varierer mellem mærker — vælg en model ovenfor for et præcist bud</p>
+            <p className="mt-1 text-xs text-slate-500">{t.bikeFit.results.frameSizeNote}</p>
           </Card>
           <Card>
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Styr ift. sadelhøjde</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{t.bikeFit.results.handlebarDrop}</p>
             <p className="mt-1 text-2xl font-semibold text-slate-200">
               {result.handlebarDrop[0]} – {result.handlebarDrop[1]} cm
             </p>
             <p className="mt-1 text-xs text-slate-500">
-              {result.handlebarDrop[0] < 0 ? 'Negativt tal = styret over sadeltop' : 'Styret lavere end sadeltop (drop)'}
+              {result.handlebarDrop[0] < 0 ? t.bikeFit.results.handlebarDropNegative : t.bikeFit.results.handlebarDropPositive}
             </p>
           </Card>
           {handlebarWidth && (
             <Card>
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Styrbredde</p>
+              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{t.bikeFit.results.handlebarWidth}</p>
               <p className="mt-1 text-2xl font-semibold text-slate-200">
                 {handlebarWidth[0]} – {handlebarWidth[1]} mm
               </p>
-              <p className="mt-1 text-xs text-slate-500">Center-til-center, ud fra din skulderbredde</p>
+              <p className="mt-1 text-xs text-slate-500">{t.bikeFit.results.handlebarWidthNote}</p>
             </Card>
           )}
         </div>
@@ -244,14 +233,11 @@ export default function BikeFit() {
         <Info size={16} className="mt-0.5 shrink-0 text-slate-500" />
         <div>
           <p>
-            Disse tal er <strong className="text-slate-300">gode udgangspunkter</strong> baseret på gængse
-            tommelfingerregler — ikke en erstatning for en professionel bikefit. Justér i småbidder (2-3 mm ad gangen på
-            sadelhøjde) og giv kroppen et par ture til at vænne sig til ændringer, før du justerer igen.
+            {t.bikeFit.info.p1Pre}
+            <strong className="text-slate-300">{t.bikeFit.info.p1Strong}</strong>
+            {t.bikeFit.info.p1Post}
           </p>
-          <p className="mt-1.5">
-            Stack/reach-matchen er ligeledes vejledende — den sammenligner cyklens egen geometri med en tommelfingerregel
-            for hvor aggressiv/afslappet en position der typisk passer til din smidighed, ikke et fysisk opmålt fit.
-          </p>
+          <p className="mt-1.5">{t.bikeFit.info.p2}</p>
         </div>
       </Card>
     </div>

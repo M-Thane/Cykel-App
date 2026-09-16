@@ -12,14 +12,17 @@ import { DISCIPLINES, type ComponentType, type Discipline } from '../types'
 import { COMPONENT_DEFS, defaultLifespan } from '../lib/componentDefs'
 import { Badge, Button, Card, EmptyState, Field, Input, ProgressBar, SectionTitle, Select } from '../components/ui'
 import { fmtDate, fmtKm, todayIso } from '../lib/format'
+import { useLang } from '../lib/i18n/context'
+import type { Dict } from '../lib/i18n/da'
 
-function wearBadge(pct: number) {
-  if (pct >= 100) return <Badge tone="danger">Skift nu</Badge>
-  if (pct >= 80) return <Badge tone="warn">Snart</Badge>
-  return <Badge tone="ok">OK</Badge>
+function wearBadge(pct: number, t: Dict) {
+  if (pct >= 100) return <Badge tone="danger">{t.bikeDetail.wear.replaceNow}</Badge>
+  if (pct >= 80) return <Badge tone="warn">{t.bikeDetail.wear.soon}</Badge>
+  return <Badge tone="ok">{t.bikeDetail.wear.ok}</Badge>
 }
 
 export default function BikeDetail() {
+  const { t, locale } = useLang()
   const { bikeId } = useParams()
   const navigate = useNavigate()
   const bike = useAppStore((s) => s.bikes.find((b) => b.id === bikeId))
@@ -55,10 +58,10 @@ export default function BikeDetail() {
   if (!bike || !bikeId) {
     return (
       <EmptyState
-        title="Cykel ikke fundet"
+        title={t.bikeDetail.notFoundTitle}
         action={
           <Link to="/sliddele">
-            <Button>Tilbage til cykler</Button>
+            <Button>{t.bikeDetail.backToBikes}</Button>
           </Link>
         }
       />
@@ -107,7 +110,7 @@ export default function BikeDetail() {
 
   function handleDeleteBike() {
     if (!bike) return
-    if (confirm(`Slet "${bike.name}" og alt tilhørende data? Dette kan ikke fortrydes.`)) {
+    if (confirm(t.bikeDetail.deleteConfirm(bike.name))) {
       removeBike(bike.id)
       navigate('/sliddele')
     }
@@ -117,13 +120,13 @@ export default function BikeDetail() {
     <div className="flex flex-col gap-5">
       <div>
         <Link to="/sliddele" className="mb-3 inline-flex items-center gap-1 text-sm text-slate-400 hover:text-slate-200">
-          <ArrowLeft size={14} /> Alle cykler
+          <ArrowLeft size={14} /> {t.bikeDetail.allBikes}
         </Link>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-xl font-semibold text-slate-100">{bike.name}</h1>
             <p className="text-sm text-slate-500">
-              {DISCIPLINES.find((d) => d.value === bike.discipline)?.label} · {fmtKm(km)} i alt
+              {t.disciplines[bike.discipline]} · {t.bikeDetail.totalKm(fmtKm(km, locale))}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -134,7 +137,7 @@ export default function BikeDetail() {
             >
               {DISCIPLINES.map((d) => (
                 <option key={d.value} value={d.value}>
-                  {d.label}
+                  {t.disciplines[d.value]}
                 </option>
               ))}
             </Select>
@@ -146,25 +149,25 @@ export default function BikeDetail() {
       </div>
 
       <Card>
-        <SectionTitle subtitle="Log dine ture for at opdatere km på cyklen og alle aktive sliddele.">Kør log</SectionTitle>
+        <SectionTitle subtitle={t.bikeDetail.rideLog.subtitle}>{t.bikeDetail.rideLog.title}</SectionTitle>
         <form onSubmit={submitRide} className="grid gap-3 sm:grid-cols-[1fr_1fr_2fr_auto] sm:items-end">
-          <Field label="Km">
+          <Field label={t.bikeDetail.rideLog.km}>
             <Input
               inputMode="decimal"
-              placeholder="fx 42.5"
+              placeholder={`${t.common.eg} 42.5`}
               value={rideKm}
               onChange={(e) => setRideKm(e.target.value)}
               required
             />
           </Field>
-          <Field label="Dato">
+          <Field label={t.bikeDetail.rideLog.date}>
             <Input type="date" value={rideDate} onChange={(e) => setRideDate(e.target.value)} />
           </Field>
-          <Field label="Note (valgfri)">
-            <Input placeholder="fx Søndagstur" value={rideNote} onChange={(e) => setRideNote(e.target.value)} />
+          <Field label={t.bikeDetail.rideLog.note}>
+            <Input placeholder={t.bikeDetail.rideLog.notePlaceholder} value={rideNote} onChange={(e) => setRideNote(e.target.value)} />
           </Field>
           <Button type="submit">
-            <Plus size={16} /> Tilføj
+            <Plus size={16} /> {t.bikeDetail.rideLog.add}
           </Button>
         </form>
 
@@ -173,8 +176,8 @@ export default function BikeDetail() {
             {sortedRides.map((r) => (
               <div key={r.id} className="flex items-center justify-between px-3 py-2 text-sm">
                 <div>
-                  <span className="text-slate-200">{fmtKm(r.km)}</span>
-                  <span className="ml-2 text-slate-500">{fmtDate(r.date)}</span>
+                  <span className="text-slate-200">{fmtKm(r.km, locale)}</span>
+                  <span className="ml-2 text-slate-500">{fmtDate(r.date, locale)}</span>
                   {r.note && <span className="ml-2 text-slate-600">· {r.note}</span>}
                 </div>
                 <button onClick={() => removeRide(r.id)} className="text-slate-600 hover:text-red-400">
@@ -188,42 +191,42 @@ export default function BikeDetail() {
 
       <Card>
         <div className="flex items-center justify-between">
-          <SectionTitle subtitle="Se km-slid på kæde, dæk, klodser m.m. og hvornår de skal skiftes.">Sliddele</SectionTitle>
+          <SectionTitle subtitle={t.bikeDetail.components.subtitle}>{t.bikeDetail.components.title}</SectionTitle>
           <Button onClick={() => setShowAddComponent((v) => !v)}>
-            <Plus size={16} /> Tilføj del
+            <Plus size={16} /> {t.bikeDetail.components.addPart}
           </Button>
         </div>
 
         {showAddComponent && (
           <form onSubmit={submitComponent} className="mb-4 grid gap-3 rounded-xl border border-slate-800 p-3 sm:grid-cols-2">
-            <Field label="Type">
+            <Field label={t.bikeDetail.components.type}>
               <Select
                 value={newType}
                 onChange={(e) => {
-                  const t = e.target.value as ComponentType
-                  setNewType(t)
-                  setNewLifespan(String(defaultLifespan(t)))
+                  const ty = e.target.value as ComponentType
+                  setNewType(ty)
+                  setNewLifespan(String(defaultLifespan(ty)))
                 }}
               >
                 {COMPONENT_DEFS.map((c) => (
                   <option key={c.type} value={c.type}>
-                    {c.label}
+                    {t.componentTypes[c.type]}
                   </option>
                 ))}
               </Select>
             </Field>
-            <Field label="Eget navn (valgfri)">
-              <Input placeholder="fx Continental GP5000" value={newLabel} onChange={(e) => setNewLabel(e.target.value)} />
+            <Field label={t.bikeDetail.components.customName}>
+              <Input placeholder={t.bikeDetail.components.customNamePlaceholder} value={newLabel} onChange={(e) => setNewLabel(e.target.value)} />
             </Field>
-            <Field label="Forventet levetid (km)" hint="Redigér gerne til producentens anbefaling">
+            <Field label={t.bikeDetail.components.expectedLifespan} hint={t.bikeDetail.components.expectedLifespanHint}>
               <Input inputMode="decimal" value={newLifespan} onChange={(e) => setNewLifespan(e.target.value)} />
             </Field>
-            <Field label="Monteret dato">
+            <Field label={t.bikeDetail.components.installedDate}>
               <Input type="date" value={newInstalledDate} onChange={(e) => setNewInstalledDate(e.target.value)} />
             </Field>
             <Field
-              label="Cykel-km ved montering"
-              hint={`Lad stå tomt for at bruge nuværende km (${fmtKm(km)})`}
+              label={t.bikeDetail.components.installedKm}
+              hint={t.bikeDetail.components.installedKmHint(fmtKm(km, locale))}
             >
               <Input
                 inputMode="decimal"
@@ -233,16 +236,16 @@ export default function BikeDetail() {
               />
             </Field>
             <div className="flex items-end gap-2">
-              <Button type="submit">Gem</Button>
+              <Button type="submit">{t.common.save}</Button>
               <Button type="button" variant="ghost" onClick={() => setShowAddComponent(false)}>
-                Annuller
+                {t.common.cancel}
               </Button>
             </div>
           </form>
         )}
 
         {active.length === 0 ? (
-          <EmptyState title="Ingen sliddele registreret endnu" description="Tilføj fx kæde, dæk eller bremseklodser for at spore slid." />
+          <EmptyState title={t.bikeDetail.components.emptyTitle} description={t.bikeDetail.components.emptyDesc} />
         ) : (
           <div className="flex flex-col gap-3">
             {active
@@ -256,14 +259,12 @@ export default function BikeDetail() {
                   <div key={c.id} className="rounded-xl border border-slate-800 p-3">
                     <div className="flex items-center justify-between gap-2">
                       <div className="min-w-0">
-                        <p className="truncate font-medium text-slate-100">{componentDisplayLabel(c)}</p>
+                        <p className="truncate font-medium text-slate-100">{componentDisplayLabel(c, t.componentTypes)}</p>
                         <p className="text-xs text-slate-500">
-                          {fmtKm(currentKm)} af {fmtKm(c.lifespanKm)} · monteret {fmtDate(c.installedAtDate)}
+                          {t.bikeDetail.components.ofLifespan(fmtKm(currentKm, locale), fmtKm(c.lifespanKm, locale), fmtDate(c.installedAtDate, locale))}
                         </p>
                       </div>
-                      <div className="flex shrink-0 items-center gap-1.5">
-                        {wearBadge(pct)}
-                      </div>
+                      <div className="flex shrink-0 items-center gap-1.5">{wearBadge(pct, t)}</div>
                     </div>
                     <div className="mt-2">
                       <ProgressBar pct={pct} />
@@ -271,32 +272,32 @@ export default function BikeDetail() {
 
                     {isEditing ? (
                       <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
-                        <Input value={editLabel} onChange={(e) => setEditLabel(e.target.value)} placeholder="Eget navn" />
+                        <Input value={editLabel} onChange={(e) => setEditLabel(e.target.value)} placeholder={t.bikeDetail.components.editNamePlaceholder} />
                         <Input
                           inputMode="decimal"
                           value={editLifespan}
                           onChange={(e) => setEditLifespan(e.target.value)}
-                          placeholder="Levetid km"
+                          placeholder={t.bikeDetail.components.editLifespanPlaceholder}
                         />
                         <div className="flex gap-2">
                           <Button variant="secondary" onClick={() => saveEdit(c.id)}>
-                            Gem
+                            {t.common.save}
                           </Button>
                           <Button variant="ghost" onClick={() => setEditingId(null)}>
-                            Fortryd
+                            {t.common.cancel}
                           </Button>
                         </div>
                       </div>
                     ) : (
                       <div className="mt-3 flex flex-wrap gap-2">
                         <Button variant="secondary" onClick={() => replaceComponent(c.id)}>
-                          <RefreshCw size={13} /> Skiftet
+                          <RefreshCw size={13} /> {t.bikeDetail.components.replaced}
                         </Button>
                         <Button variant="ghost" onClick={() => startEdit(c.id, c.lifespanKm, c.customLabel ?? '')}>
-                          <Pencil size={13} /> Rediger
+                          <Pencil size={13} /> {t.common.edit}
                         </Button>
                         <Button variant="ghost" onClick={() => removeComponent(c.id)}>
-                          <Trash2 size={13} /> Slet
+                          <Trash2 size={13} /> {t.common.delete}
                         </Button>
                       </div>
                     )}
@@ -312,7 +313,7 @@ export default function BikeDetail() {
               onClick={() => setShowHistory((v) => !v)}
               className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-200"
             >
-              <History size={14} /> Historik ({inactive.length}) {showHistory ? '▲' : '▼'}
+              <History size={14} /> {t.bikeDetail.components.history(inactive.length)} {showHistory ? '▲' : '▼'}
             </button>
             {showHistory && (
               <div className="mt-2 flex flex-col gap-2">
@@ -321,9 +322,13 @@ export default function BikeDetail() {
                   .sort((a, b) => (b.replacedAtDate ?? '').localeCompare(a.replacedAtDate ?? ''))
                   .map((c) => (
                     <div key={c.id} className="flex items-center justify-between rounded-lg bg-slate-900/50 px-3 py-2 text-sm">
-                      <span className="text-slate-400">{componentDisplayLabel(c)}</span>
+                      <span className="text-slate-400">{componentDisplayLabel(c, t.componentTypes)}</span>
                       <span className="text-slate-600">
-                        {fmtKm(componentCurrentKm(km, c))} · {fmtDate(c.installedAtDate)} → {fmtDate(c.replacedAtDate ?? '')}
+                        {t.bikeDetail.components.historyRow(
+                          fmtKm(componentCurrentKm(km, c), locale),
+                          fmtDate(c.installedAtDate, locale),
+                          fmtDate(c.replacedAtDate ?? '', locale),
+                        )}
                       </span>
                     </div>
                   ))}

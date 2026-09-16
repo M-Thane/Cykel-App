@@ -4,14 +4,20 @@ import { Button, Card, Field, Input, Select, SectionTitle } from '../components/
 import { calcTirePressure, RIDE_STYLES, SURFACES, TUBE_TYPES, type RideStyle, type Surface, type TubeType } from '../lib/tirePressure'
 import { TIRE_PRESETS, tirePresetLabel, type TireDiscipline } from '../lib/tires'
 import { WHEEL_PRESETS, wheelPresetLabel, type WheelDiscipline } from '../lib/wheels'
+import { useLang } from '../lib/i18n/context'
+import type { Dict } from '../lib/i18n/da'
 
-const TIRE_DISCIPLINES: { value: TireDiscipline; label: string }[] = [
-  { value: 'landevej', label: 'Landevej' },
-  { value: 'gravel', label: 'Gravel' },
-  { value: 'mtb', label: 'MTB' },
-]
+function tireDisciplines(t: Dict): { value: TireDiscipline; label: string }[] {
+  return [
+    { value: 'landevej', label: t.disciplines.landevej },
+    { value: 'gravel', label: t.disciplines.gravel },
+    { value: 'mtb', label: t.disciplines.mtb },
+  ]
+}
 
 function WheelPicker({ onApply }: { onApply: (mm: number) => void }) {
+  const { t } = useLang()
+  const TIRE_DISCIPLINES = tireDisciplines(t)
   const [discipline, setDiscipline] = useState<WheelDiscipline>('landevej')
   const available = useMemo(() => WHEEL_PRESETS.filter((p) => p.discipline === discipline), [discipline])
   const [presetId, setPresetId] = useState(available[0]?.id ?? '')
@@ -28,11 +34,9 @@ function WheelPicker({ onApply }: { onApply: (mm: number) => void }) {
 
   return (
     <Card>
-      <p className="mb-3 text-sm text-slate-400">
-        Vælg et hjul fra DT Swiss, Zipp, Mavic, Fulcrum eller Roval for at udfylde indvendig fælgebredde automatisk.
-      </p>
+      <p className="mb-3 text-sm text-slate-400">{t.tirePressure.wheelPicker.intro}</p>
       <div className="grid gap-3 sm:grid-cols-3 sm:items-end">
-        <Field label="Type cykling">
+        <Field label={t.tirePressure.wheelPicker.disciplineLabel}>
           <Select value={discipline} onChange={(e) => setDiscipline(e.target.value as WheelDiscipline)}>
             {TIRE_DISCIPLINES.map((d) => (
               <option key={d.value} value={d.value}>
@@ -41,7 +45,7 @@ function WheelPicker({ onApply }: { onApply: (mm: number) => void }) {
             ))}
           </Select>
         </Field>
-        <Field label="Hjul">
+        <Field label={t.tirePressure.wheelPicker.wheelLabel}>
           <Select value={preset?.id ?? ''} onChange={(e) => setPresetId(e.target.value)}>
             {available.map((p) => (
               <option key={p.id} value={p.id}>
@@ -52,7 +56,7 @@ function WheelPicker({ onApply }: { onApply: (mm: number) => void }) {
         </Field>
         {preset && (
           <Button variant="secondary" onClick={() => onApply(preset.internalWidthMm)}>
-            Brug denne fælgbredde
+            {t.tirePressure.wheelPicker.useRimWidth}
           </Button>
         )}
       </div>
@@ -62,6 +66,8 @@ function WheelPicker({ onApply }: { onApply: (mm: number) => void }) {
 }
 
 function TirePicker({ onApply }: { onApply: (mm: number) => void }) {
+  const { t } = useLang()
+  const TIRE_DISCIPLINES = tireDisciplines(t)
   const [discipline, setDiscipline] = useState<TireDiscipline>('landevej')
   const available = useMemo(() => TIRE_PRESETS.filter((p) => p.discipline === discipline), [discipline])
   const [presetId, setPresetId] = useState(available[0]?.id ?? '')
@@ -80,11 +86,9 @@ function TirePicker({ onApply }: { onApply: (mm: number) => void }) {
 
   return (
     <Card>
-      <p className="mb-3 text-sm text-slate-400">
-        Vælg en dækmodel fra Continental, Schwalbe, Pirelli, Vittoria eller Specialized for at udfylde bredden automatisk.
-      </p>
+      <p className="mb-3 text-sm text-slate-400">{t.tirePressure.tirePicker.intro}</p>
       <div className="grid gap-3 sm:grid-cols-3 sm:items-end">
-        <Field label="Type cykling">
+        <Field label={t.tirePressure.tirePicker.disciplineLabel}>
           <Select value={discipline} onChange={(e) => setDiscipline(e.target.value as TireDiscipline)}>
             {TIRE_DISCIPLINES.map((d) => (
               <option key={d.value} value={d.value}>
@@ -93,7 +97,7 @@ function TirePicker({ onApply }: { onApply: (mm: number) => void }) {
             ))}
           </Select>
         </Field>
-        <Field label="Dækmodel">
+        <Field label={t.tirePressure.tirePicker.modelLabel}>
           <Select value={preset?.id ?? ''} onChange={(e) => setPresetId(e.target.value)}>
             {available.map((p) => (
               <option key={p.id} value={p.id}>
@@ -103,7 +107,7 @@ function TirePicker({ onApply }: { onApply: (mm: number) => void }) {
           </Select>
         </Field>
         {preset && (
-          <Field label="Bredde">
+          <Field label={t.tirePressure.tirePicker.widthLabel}>
             <Select value={widthIdx} onChange={(e) => setWidthIdx(Number(e.target.value))}>
               {preset.widths.map((w, i) => (
                 <option key={i} value={i}>
@@ -117,11 +121,11 @@ function TirePicker({ onApply }: { onApply: (mm: number) => void }) {
       {preset && (
         <div className="mt-3 flex items-center gap-3">
           <Button variant="secondary" onClick={() => onApply(preset.widths[widthIdx].mm)}>
-            Brug denne bredde
+            {t.tirePressure.tirePicker.useWidth}
           </Button>
           {(preset.tubelessReady || preset.note) && (
             <p className="text-xs text-slate-500">
-              {preset.tubelessReady ? 'Tubeless-ready' : ''}
+              {preset.tubelessReady ? t.tirePressure.tirePicker.tubelessReady : ''}
               {preset.tubelessReady && preset.note ? ' · ' : ''}
               {preset.note}
             </p>
@@ -133,6 +137,7 @@ function TirePicker({ onApply }: { onApply: (mm: number) => void }) {
 }
 
 export default function TirePressure() {
+  const { t } = useLang()
   const [riderWeight, setRiderWeight] = useState('75')
   const [bikeWeight, setBikeWeight] = useState('9')
   const [tireWidth, setTireWidth] = useState('28')
@@ -160,50 +165,48 @@ export default function TirePressure() {
 
   return (
     <div className="flex flex-col gap-5">
-      <SectionTitle subtitle="Find et vejledende udgangspunkt for dæktryk baseret på vægt, dækbredde, underlag og cykeltype.">
-        Dæktryksberegner
-      </SectionTitle>
+      <SectionTitle subtitle={t.tirePressure.subtitle}>{t.tirePressure.title}</SectionTitle>
 
       <TirePicker onApply={(mm) => setTireWidth(String(mm))} />
       <WheelPicker onApply={(mm) => setRimWidth(String(mm))} />
 
       <Card>
         <div className="grid gap-3 sm:grid-cols-2">
-          <Field label="Rytter-vægt (kg)">
+          <Field label={t.tirePressure.form.riderWeight}>
             <Input inputMode="decimal" value={riderWeight} onChange={(e) => setRiderWeight(e.target.value)} />
           </Field>
-          <Field label="Cykel + udstyr (kg)" hint="Inkl. bagagerum, drikkedunke mv. hvis relevant">
+          <Field label={t.tirePressure.form.bikeWeight} hint={t.tirePressure.form.bikeWeightHint}>
             <Input inputMode="decimal" value={bikeWeight} onChange={(e) => setBikeWeight(e.target.value)} />
           </Field>
-          <Field label="Dækbredde (mm)" hint="Den faktiske monterede bredde, ikke kun tallet på dæksiden">
+          <Field label={t.tirePressure.form.tireWidth} hint={t.tirePressure.form.tireWidthHint}>
             <Input inputMode="decimal" value={tireWidth} onChange={(e) => setTireWidth(e.target.value)} />
           </Field>
-          <Field label="Indvendig fælgebredde (mm)" hint="Valgfri — bredere fælg giver bredere monteret dæk">
-            <Input inputMode="decimal" placeholder="fx 21" value={rimWidth} onChange={(e) => setRimWidth(e.target.value)} />
+          <Field label={t.tirePressure.form.rimWidth} hint={t.tirePressure.form.rimWidthHint}>
+            <Input inputMode="decimal" placeholder={`${t.common.eg} 21`} value={rimWidth} onChange={(e) => setRimWidth(e.target.value)} />
           </Field>
-          <Field label="Dæktype">
+          <Field label={t.tirePressure.form.tubeType}>
             <Select value={tube} onChange={(e) => setTube(e.target.value as TubeType)}>
-              {TUBE_TYPES.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
+              {TUBE_TYPES.map((ty) => (
+                <option key={ty.value} value={ty.value}>
+                  {t.tubeTypes[ty.value]}
                 </option>
               ))}
             </Select>
           </Field>
-          <Field label="Underlag">
+          <Field label={t.tirePressure.form.surface}>
             <Select value={surface} onChange={(e) => setSurface(e.target.value as Surface)}>
               {SURFACES.map((s) => (
                 <option key={s.value} value={s.value}>
-                  {s.label}
+                  {t.surfaces[s.value]}
                 </option>
               ))}
             </Select>
           </Field>
-          <Field label="Kørestil">
+          <Field label={t.tirePressure.form.rideStyle}>
             <Select value={style} onChange={(e) => setStyle(e.target.value as RideStyle)}>
               {RIDE_STYLES.map((s) => (
                 <option key={s.value} value={s.value}>
-                  {s.label}
+                  {t.rideStyles[s.value].label}
                 </option>
               ))}
             </Select>
@@ -214,18 +217,18 @@ export default function TirePressure() {
       {result && (
         <div className="grid gap-3 sm:grid-cols-2">
           <Card className="text-center">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Fordæk</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{t.tirePressure.result.front}</p>
             <p className="mt-1 text-3xl font-semibold text-brand-400">{result.frontBar.toFixed(1)} bar</p>
             <p className="text-sm text-slate-500">{result.frontPsi} psi</p>
           </Card>
           <Card className="text-center">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Bagdæk</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{t.tirePressure.result.rear}</p>
             <p className="mt-1 text-3xl font-semibold text-brand-400">{result.rearBar.toFixed(1)} bar</p>
             <p className="text-sm text-slate-500">{result.rearPsi} psi</p>
           </Card>
           {rimWidth.trim() && Math.abs(result.effectiveWidthMm - parseFloat(tireWidth.replace(',', '.'))) >= 0.1 && (
             <p className="sm:col-span-2 text-center text-xs text-slate-500">
-              Effektiv monteret bredde justeret til {result.effectiveWidthMm}mm ud fra fælgbredden
+              {t.tirePressure.result.effectiveWidthNote(result.effectiveWidthMm)}
             </p>
           )}
         </div>
@@ -235,18 +238,13 @@ export default function TirePressure() {
         <Info size={16} className="mt-0.5 shrink-0 text-slate-500" />
         <div>
           <p>
-            Dette er et <strong className="text-slate-300">vejledende udgangspunkt</strong> — ikke en eksakt videnskab. Bagdæk
-            får typisk lidt højere tryk end fordæk pga. vægtfordelingen. Finjustér ±0,2-0,3 bar efter fornemmelse, og
-            overskrid aldrig producentens min./maks.-tryk angivet på dæksiden.
+            {t.tirePressure.info.p1Pre}
+            <strong className="text-slate-300">{t.tirePressure.info.p1Strong}</strong>
+            {t.tirePressure.info.p1Post}
           </p>
-          <p className="mt-1.5">
-            Angiver du indvendig fælgebredde, justeres den effektive monterede dækbredde ca. 0,4mm pr. mm fælgen afviger
-            fra en 19mm-referencefælg — en bredere fælg giver et bredere, mere afrundet dæk.
-          </p>
+          <p className="mt-1.5">{t.tirePressure.info.p2}</p>
           {(result?.clampedLow || result?.clampedHigh) && (
-            <p className="mt-1.5 text-amber-400">
-              Det beregnede tryk lå uden for et typisk sikkert interval og er justeret. Dobbelttjek dine input.
-            </p>
+            <p className="mt-1.5 text-amber-400">{t.tirePressure.info.clampWarning}</p>
           )}
         </div>
       </Card>

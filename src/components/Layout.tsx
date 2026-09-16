@@ -1,15 +1,46 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { Bike, Gauge, Cog, Ruler, LayoutDashboard } from 'lucide-react'
+import { useLang, type Lang } from '../lib/i18n/context'
+import type { Dict } from '../lib/i18n/da'
 
-const NAV_ITEMS = [
-  { to: '/', label: 'Oversigt', icon: LayoutDashboard, end: true },
-  { to: '/sliddele', label: 'Sliddele', icon: Bike, end: false },
-  { to: '/daektryk', label: 'Dæktryk', icon: Gauge, end: false },
-  { to: '/gear', label: 'Gear', icon: Cog, end: false },
-  { to: '/bikefit', label: 'Bikefit', icon: Ruler, end: false },
-]
+function navItems(t: Dict) {
+  return [
+    { to: '/', label: t.nav.overview, icon: LayoutDashboard, end: true },
+    { to: '/sliddele', label: t.nav.maintenance, icon: Bike, end: false },
+    { to: '/daektryk', label: t.nav.tirePressure, icon: Gauge, end: false },
+    { to: '/gear', label: t.nav.gear, icon: Cog, end: false },
+    { to: '/bikefit', label: t.nav.bikefit, icon: Ruler, end: false },
+  ]
+}
+
+function LanguageSwitcher() {
+  const { lang, setLang } = useLang()
+  const options: { value: Lang; label: string }[] = [
+    { value: 'da', label: 'DA' },
+    { value: 'en', label: 'EN' },
+  ]
+  return (
+    <div className="flex items-center gap-0.5 rounded-lg bg-slate-900 p-0.5">
+      {options.map((o) => (
+        <button
+          key={o.value}
+          onClick={() => setLang(o.value)}
+          aria-pressed={lang === o.value}
+          className={`rounded-md px-2 py-1 text-xs font-medium transition-colors ${
+            lang === o.value ? 'bg-brand-600 text-white' : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  )
+}
 
 export default function Layout() {
+  const { t } = useLang()
+  const NAV_ITEMS = navItems(t)
+
   return (
     <div className="min-h-dvh bg-slate-950 text-slate-100">
       <header className="sticky top-0 z-20 border-b border-slate-800 bg-slate-950/90 backdrop-blur">
@@ -20,23 +51,26 @@ export default function Layout() {
             </span>
             <span className="text-base font-semibold tracking-tight">Cykel-App</span>
           </div>
-          <nav className="hidden gap-1 sm:flex">
-            {NAV_ITEMS.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.end}
-                className={({ isActive }) =>
-                  `flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-                    isActive ? 'bg-brand-600/20 text-brand-300' : 'text-slate-400 hover:bg-slate-900 hover:text-slate-200'
-                  }`
-                }
-              >
-                <item.icon size={16} />
-                {item.label}
-              </NavLink>
-            ))}
-          </nav>
+          <div className="flex items-center gap-3">
+            <nav className="hidden gap-1 sm:flex">
+              {NAV_ITEMS.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={item.end}
+                  className={({ isActive }) =>
+                    `flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                      isActive ? 'bg-brand-600/20 text-brand-300' : 'text-slate-400 hover:bg-slate-900 hover:text-slate-200'
+                    }`
+                  }
+                >
+                  <item.icon size={16} />
+                  {item.label}
+                </NavLink>
+              ))}
+            </nav>
+            <LanguageSwitcher />
+          </div>
         </div>
       </header>
 

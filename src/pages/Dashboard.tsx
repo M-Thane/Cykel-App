@@ -2,21 +2,22 @@ import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { AlertTriangle, Bike, Gauge, Cog, Ruler, ArrowRight } from 'lucide-react'
 import { useAppStore, totalKmForBike, componentWearPct, componentDisplayLabel } from '../store/useAppStore'
-import { DISCIPLINES } from '../types'
 import { Badge, Card, EmptyState, SectionTitle, Button } from '../components/ui'
 import { fmtKm } from '../lib/format'
-
-const TOOLS = [
-  { to: '/sliddele', label: 'Sliddele', desc: 'Km-tracking på kæde, dæk, klodser m.m.', icon: Bike },
-  { to: '/daektryk', label: 'Dæktryk', desc: 'Beregn dæktryk ud fra vægt og underlag', icon: Gauge },
-  { to: '/gear', label: 'Gear', desc: 'Udveksling, udrulning og hastighed', icon: Cog },
-  { to: '/bikefit', label: 'Bikefit', desc: 'Sadelhøjde og rammestørrelse', icon: Ruler },
-]
+import { useLang } from '../lib/i18n/context'
 
 export default function Dashboard() {
+  const { t, locale } = useLang()
   const bikes = useAppStore((s) => s.bikes)
   const rides = useAppStore((s) => s.rides)
   const components = useAppStore((s) => s.components)
+
+  const TOOLS = [
+    { to: '/sliddele', label: t.dashboard.tools.maintenance.label, desc: t.dashboard.tools.maintenance.desc, icon: Bike },
+    { to: '/daektryk', label: t.dashboard.tools.tirePressure.label, desc: t.dashboard.tools.tirePressure.desc, icon: Gauge },
+    { to: '/gear', label: t.dashboard.tools.gear.label, desc: t.dashboard.tools.gear.desc, icon: Cog },
+    { to: '/bikefit', label: t.dashboard.tools.bikefit.label, desc: t.dashboard.tools.bikefit.desc, icon: Ruler },
+  ]
 
   const stats = useMemo(() => {
     const totalKm = bikes.reduce((sum, b) => sum + totalKmForBike(rides, b.id), 0)
@@ -33,25 +34,25 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col gap-5">
-      <SectionTitle subtitle="Din samlede base for cykling: sliddele, dæktryk, gear og bikefit.">Oversigt</SectionTitle>
+      <SectionTitle subtitle={t.dashboard.subtitle}>{t.dashboard.title}</SectionTitle>
 
       <div className="grid gap-3 sm:grid-cols-2">
         <Card>
-          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Cykler</p>
+          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{t.dashboard.bikesLabel}</p>
           <p className="mt-1 text-3xl font-semibold text-slate-100">{bikes.length}</p>
         </Card>
         <Card>
-          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Samlede km logget</p>
-          <p className="mt-1 text-3xl font-semibold text-slate-100">{fmtKm(stats.totalKm)}</p>
+          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{t.dashboard.totalKmLabel}</p>
+          <p className="mt-1 text-3xl font-semibold text-slate-100">{fmtKm(stats.totalKm, locale)}</p>
         </Card>
       </div>
 
       <div>
-        <SectionTitle>Kræver opmærksomhed</SectionTitle>
+        <SectionTitle>{t.dashboard.attentionTitle}</SectionTitle>
         {stats.attention.length === 0 ? (
           <EmptyState
-            title="Alt ser fint ud"
-            description={bikes.length === 0 ? 'Tilføj en cykel for at begynde at spore sliddele.' : 'Ingen sliddele nærmer sig deres forventede levetid lige nu.'}
+            title={t.dashboard.allGoodTitle}
+            description={bikes.length === 0 ? t.dashboard.allGoodDescNoBikes : t.dashboard.allGoodDescNoIssues}
           />
         ) : (
           <div className="flex flex-col gap-2">
@@ -62,11 +63,9 @@ export default function Dashboard() {
                     <AlertTriangle size={16} className={pct >= 100 ? 'text-red-400' : 'text-amber-400'} />
                     <div>
                       <p className="text-sm font-medium text-slate-100">
-                        {componentDisplayLabel(component)} · {bike.name}
+                        {componentDisplayLabel(component, t.componentTypes)} · {bike.name}
                       </p>
-                      <p className="text-xs text-slate-500">
-                        {DISCIPLINES.find((d) => d.value === bike.discipline)?.label}
-                      </p>
+                      <p className="text-xs text-slate-500">{t.disciplines[bike.discipline]}</p>
                     </div>
                   </div>
                   <Badge tone={pct >= 100 ? 'danger' : 'warn'}>{Math.round(pct)}%</Badge>
@@ -78,18 +77,18 @@ export default function Dashboard() {
       </div>
 
       <div>
-        <SectionTitle>Værktøjer</SectionTitle>
+        <SectionTitle>{t.dashboard.toolsTitle}</SectionTitle>
         <div className="grid gap-3 sm:grid-cols-2">
-          {TOOLS.map((t) => (
-            <Link key={t.to} to={t.to}>
+          {TOOLS.map((tool) => (
+            <Link key={tool.to} to={tool.to}>
               <Card className="flex items-center justify-between hover:border-brand-600">
                 <div className="flex items-center gap-3">
                   <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600/15 text-brand-400">
-                    <t.icon size={18} />
+                    <tool.icon size={18} />
                   </span>
                   <div>
-                    <p className="text-sm font-medium text-slate-100">{t.label}</p>
-                    <p className="text-xs text-slate-500">{t.desc}</p>
+                    <p className="text-sm font-medium text-slate-100">{tool.label}</p>
+                    <p className="text-xs text-slate-500">{tool.desc}</p>
                   </div>
                 </div>
                 <ArrowRight size={16} className="text-slate-600" />
@@ -101,7 +100,7 @@ export default function Dashboard() {
 
       {bikes.length === 0 && (
         <Link to="/sliddele">
-          <Button className="w-full sm:w-auto">Kom i gang — tilføj din første cykel</Button>
+          <Button className="w-full sm:w-auto">{t.dashboard.getStarted}</Button>
         </Link>
       )}
     </div>

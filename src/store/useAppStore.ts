@@ -122,8 +122,9 @@ export function totalKmForBike(rides: RideLog[], bikeId: string): number {
   return rides.filter((r) => r.bikeId === bikeId).reduce((sum, r) => sum + r.km, 0)
 }
 
-export function componentDisplayLabel(c: WearComponent): string {
-  return c.customLabel?.trim() ? c.customLabel : componentLabel(c.type)
+export function componentDisplayLabel(c: WearComponent, componentTypeLabels?: Record<ComponentType, string>): string {
+  if (c.customLabel?.trim()) return c.customLabel
+  return componentTypeLabels ? componentTypeLabels[c.type] : componentLabel(c.type)
 }
 
 export function componentCurrentKm(bikeKm: number, c: WearComponent): number {
