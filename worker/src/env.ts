@@ -1,0 +1,10 @@
+export interface Env {
+  STRAVA_CLIENT_ID: string
+  STRAVA_CLIENT_SECRET: string
+  STRAVA_REDIRECT_URI: string
+  STRAVA_WEBHOOK_VERIFY_TOKEN: string
+  SUPABASE_URL: string
+  SUPABASE_SERVICE_ROLE_KEY: string
+  APP_JWT_SECRET: string
+  ALLOWED_ORIGIN: string
+}

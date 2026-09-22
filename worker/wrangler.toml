@@ -1,0 +1,20 @@
+name = "cykel-app-api"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+
+# Fallback poll, in case a Strava webhook delivery is missed.
+[triggers]
+crons = ["0 */6 * * *"]
+
+[vars]
+# Public config, safe to commit. Real secrets are set with `wrangler secret put`:
+#   STRAVA_CLIENT_SECRET
+#   SUPABASE_SERVICE_ROLE_KEY
+#   APP_JWT_SECRET
+#   STRAVA_WEBHOOK_VERIFY_TOKEN
+STRAVA_CLIENT_ID = "REPLACE_WITH_STRAVA_CLIENT_ID"
+SUPABASE_URL = "https://REPLACE_WITH_PROJECT_REF.supabase.co"
+# The GitHub Pages origin allowed to call this API.
+ALLOWED_ORIGIN = "https://m-thane.github.io"
+# Where Strava redirects back to after login.
+STRAVA_REDIRECT_URI = "https://m-thane.github.io/Cykel-App/#/strava-callback"
