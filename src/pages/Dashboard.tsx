@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { AlertTriangle, Bike, Gauge, Cog, Ruler, ArrowRight } from 'lucide-react'
+import { AlertTriangle, Bike, Gauge, Cog, Ruler, HeartPulse, ArrowRight } from 'lucide-react'
 import { useAppStore, totalKmForBike, componentWearPct, componentDisplayLabel } from '../store/useAppStore'
 import { Badge, Card, EmptyState, SectionTitle, Button } from '../components/ui'
 import { fmtKm } from '../lib/format'
@@ -17,6 +17,7 @@ export default function Dashboard() {
     { to: '/daektryk', label: t.dashboard.tools.tirePressure.label, desc: t.dashboard.tools.tirePressure.desc, icon: Gauge },
     { to: '/gear', label: t.dashboard.tools.gear.label, desc: t.dashboard.tools.gear.desc, icon: Cog },
     { to: '/bikefit', label: t.dashboard.tools.bikefit.label, desc: t.dashboard.tools.bikefit.desc, icon: Ruler },
+    { to: '/traening', label: t.dashboard.tools.training.label, desc: t.dashboard.tools.training.desc, icon: HeartPulse },
   ]
 
   const stats = useMemo(() => {

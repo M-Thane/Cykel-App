@@ -36,6 +36,7 @@ export default function BikeDetail() {
 
   const [rideKm, setRideKm] = useState('')
   const [rideDate, setRideDate] = useState(todayIso())
+  const [rideDuration, setRideDuration] = useState('')
   const [rideNote, setRideNote] = useState('')
 
   const [showAddComponent, setShowAddComponent] = useState(false)
@@ -72,8 +73,10 @@ export default function BikeDetail() {
     e.preventDefault()
     const val = parseFloat(rideKm.replace(',', '.'))
     if (!val || val <= 0) return
-    addRide(bikeId!, val, rideDate, rideNote.trim() || undefined)
+    const duration = parseFloat(rideDuration.replace(',', '.'))
+    addRide(bikeId!, val, rideDate, rideNote.trim() || undefined, duration > 0 ? duration : undefined)
     setRideKm('')
+    setRideDuration('')
     setRideNote('')
   }
 
@@ -150,7 +153,7 @@ export default function BikeDetail() {
 
       <Card>
         <SectionTitle subtitle={t.bikeDetail.rideLog.subtitle}>{t.bikeDetail.rideLog.title}</SectionTitle>
-        <form onSubmit={submitRide} className="grid gap-3 sm:grid-cols-[1fr_1fr_2fr_auto] sm:items-end">
+        <form onSubmit={submitRide} className="grid gap-3 sm:grid-cols-[1fr_1fr_1fr_2fr_auto] sm:items-end">
           <Field label={t.bikeDetail.rideLog.km}>
             <Input
               inputMode="decimal"
@@ -162,6 +165,14 @@ export default function BikeDetail() {
           </Field>
           <Field label={t.bikeDetail.rideLog.date}>
             <Input type="date" value={rideDate} onChange={(e) => setRideDate(e.target.value)} />
+          </Field>
+          <Field label={t.bikeDetail.rideLog.duration} hint={t.bikeDetail.rideLog.durationHint}>
+            <Input
+              inputMode="decimal"
+              placeholder={`${t.common.eg} 90`}
+              value={rideDuration}
+              onChange={(e) => setRideDuration(e.target.value)}
+            />
           </Field>
           <Field label={t.bikeDetail.rideLog.note}>
             <Input placeholder={t.bikeDetail.rideLog.notePlaceholder} value={rideNote} onChange={(e) => setRideNote(e.target.value)} />
@@ -178,6 +189,7 @@ export default function BikeDetail() {
                 <div>
                   <span className="text-slate-200">{fmtKm(r.km, locale)}</span>
                   <span className="ml-2 text-slate-500">{fmtDate(r.date, locale)}</span>
+                  {r.durationMin && <span className="ml-2 text-slate-600">· {r.durationMin} min</span>}
                   {r.note && <span className="ml-2 text-slate-600">· {r.note}</span>}
                 </div>
                 <button onClick={() => removeRide(r.id)} className="text-slate-600 hover:text-red-400">

@@ -15,6 +15,7 @@ export const da = {
     tirePressure: 'Dæktryk',
     gear: 'Gear',
     bikefit: 'Bikefit',
+    training: 'Træning',
   },
 
   disciplines: {
@@ -95,6 +96,7 @@ export const da = {
       tirePressure: { label: 'Dæktryk', desc: 'Beregn dæktryk ud fra vægt og underlag' },
       gear: { label: 'Gear', desc: 'Udveksling, udrulning og hastighed' },
       bikefit: { label: 'Bikefit', desc: 'Sadelhøjde og rammestørrelse' },
+      training: { label: 'Træning', desc: 'Zoner, ugeplan og din træningsoversigt' },
     },
   },
 
@@ -128,6 +130,8 @@ export const da = {
       subtitle: 'Log dine ture for at opdatere km på cyklen og alle aktive sliddele.',
       km: 'Km',
       date: 'Dato',
+      duration: 'Varighed (min, valgfri)',
+      durationHint: 'Giver dig timer og snitfart under Træning',
       note: 'Note (valgfri)',
       notePlaceholder: 'fx Søndagstur',
       add: 'Tilføj',
@@ -314,6 +318,71 @@ export const da = {
       p1Post:
         ' baseret på gængse tommelfingerregler — ikke en erstatning for en professionel bikefit. Justér i småbidder (2-3 mm ad gangen på sadelhøjde) og giv kroppen et par ture til at vænne sig til ændringer, før du justerer igen.',
       p2: 'Stack/reach-matchen er ligeledes vejledende — den sammenligner cyklens egen geometri med en tommelfingerregel for hvor aggressiv/afslappet en position der typisk passer til din smidighed, ikke et fysisk opmålt fit.',
+    },
+  },
+
+  trainingGoals: {
+    udholdenhed: 'Udholdenhed / opbyg base',
+    fart: 'Blive hurtigere',
+    vaegttab: 'Vægttab / kalorieforbrænding',
+    event: 'Forberede en begivenhed',
+    generel: 'Generel fitness',
+  },
+
+  workoutTypes: {
+    hvile: { name: 'Hvile', desc: 'Ingen træning — restitution er en del af fremgangen.' },
+    endurance: { name: 'Udholdenhed', desc: 'Rolig, jævn tur i zone 2 — du kan føre en samtale hele turen.' },
+    interval: { name: 'Interval', desc: 'Korte, hårde indsatser (fx 4-6 × 3-5 min) med pause imellem.' },
+    tempo: { name: 'Tempo', desc: 'Jævn, moderat hård indsats — føles anstrengt, men holdbart i 20-40 min.' },
+    lang_tur: { name: 'Lang tur', desc: 'Ugens længste tur, i roligt tempo — bygger udholdenhed.' },
+    restitution: { name: 'Aktiv restitution', desc: 'Meget let tur, kun for at holde benene i gang.' },
+  },
+
+  training: {
+    title: 'Personlig træner',
+    subtitle: 'Træningszoner, ugeplan og oversigt over din træning — ud fra dine tal og logget kørsel.',
+    profile: {
+      title: 'Din profil',
+      subtitle: 'Udfyld det du kender — resten af siden bruger det du har angivet.',
+      ftp: 'FTP (watt)',
+      ftpHint: 'Functional Threshold Power — den effekt du kan holde i ca. 1 time',
+      maxHr: 'Makspuls (bpm)',
+      maxHrHint: 'Din højeste målte puls — brug den reelle værdi frem for en formel, hvis du kender den',
+      weeklyGoalKm: 'Ugentligt km-mål',
+      weeklyGoalDays: 'Træningsdage/uge',
+      goal: 'Mål',
+      chooseGoal: '— Vælg mål —',
+    },
+    zones: {
+      title: 'Træningszoner',
+      powerTitle: 'Effektzoner (FTP)',
+      hrTitle: 'Pulszoner',
+      emptyTitle: 'Ingen zoner endnu',
+      emptyDesc: 'Angiv FTP og/eller makspuls i profilen ovenfor for at se dine træningszoner.',
+      zoneCol: 'Zone',
+      rangeCol: 'Interval',
+      powerZoneNames: ['Aktiv restitution', 'Udholdenhed', 'Tempo', 'Terskel', 'VO2max', 'Anaerob kapacitet', 'Neuromuskulær'],
+      hrZoneNames: ['Restitution', 'Udholdenhed', 'Tempo', 'Terskel', 'Maksimal'],
+    },
+    plan: {
+      title: 'Ugeplan',
+      subtitle: 'Et generisk ugeskema ud fra dit mål og antal træningsdage — juster efter hvordan kroppen reagerer.',
+      emptyTitle: 'Vælg mål og træningsdage',
+      emptyDesc: 'Vælg dit mål og antal træningsdage/uge i profilen ovenfor for at få et forslag til ugeplan.',
+      weekdaysShort: ['Man', 'Tir', 'Ons', 'Tor', 'Fre', 'Lør', 'Søn'],
+    },
+    analysis: {
+      title: 'Din træning',
+      subtitle: 'Km pr. uge de seneste 8 uger, ud fra alle dine logget ture på tværs af cykler.',
+      thisWeek: 'Denne uge',
+      vsGoal: (km: string, goal: string) => `${km} af ${goal} km-mål`,
+      daysRidden: (n: number, goal: number) => `${n} af ${goal} træningsdage`,
+      noRides: 'Ingen ture logget de seneste 8 uger endnu.',
+      avgPace: (kmh: string) => `snit ${kmh} km/t`,
+    },
+    info: {
+      p1: 'Zonerne følger almindeligt anerkendte modeller (Coggan-effektzoner ud fra FTP, %-af-makspuls-zoner) — ikke individuel coaching. Ugeplanen er en generisk skabelon, ikke et personligt træningsprogram.',
+      p2: 'Analysen bruger kun km og dato fra dine logget ture. Angiver du varighed ved en tur, viser appen også timer og snitfart for ugen.',
     },
   },
 }

@@ -56,4 +56,15 @@ export interface RideLog {
   date: string
   km: number
   note?: string
+  durationMin?: number
 }
+
+export interface TrainingProfile {
+  ftpWatts?: number
+  maxHr?: number
+  weeklyGoalKm?: number
+  weeklyGoalDays?: number
+  goal?: TrainingGoal
+}
+
+export type TrainingGoal = 'udholdenhed' | 'fart' | 'vaegttab' | 'event' | 'generel'

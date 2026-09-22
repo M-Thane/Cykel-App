@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { Bike, Gauge, Cog, Ruler, LayoutDashboard } from 'lucide-react'
+import { Bike, Gauge, Cog, Ruler, LayoutDashboard, HeartPulse } from 'lucide-react'
 import { useLang, type Lang } from '../lib/i18n/context'
 import type { Dict } from '../lib/i18n/da'
 
@@ -10,6 +10,7 @@ function navItems(t: Dict) {
     { to: '/daektryk', label: t.nav.tirePressure, icon: Gauge, end: false },
     { to: '/gear', label: t.nav.gear, icon: Cog, end: false },
     { to: '/bikefit', label: t.nav.bikefit, icon: Ruler, end: false },
+    { to: '/traening', label: t.nav.training, icon: HeartPulse, end: false },
   ]
 }
 

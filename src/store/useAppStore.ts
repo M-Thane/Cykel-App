@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { Bike, Discipline, RideLog, WearComponent, ComponentType } from '../types'
+import type { Bike, Discipline, RideLog, WearComponent, ComponentType, TrainingProfile } from '../types'
 import { defaultLifespan, componentLabel } from '../lib/componentDefs'
 import { todayIso } from '../lib/format'
 
@@ -12,13 +12,16 @@ interface AppState {
   bikes: Bike[]
   components: WearComponent[]
   rides: RideLog[]
+  trainingProfile: TrainingProfile
 
   addBike: (name: string, discipline: Discipline) => string
   updateBike: (id: string, patch: Partial<Pick<Bike, 'name' | 'discipline' | 'archived'>>) => void
   removeBike: (id: string) => void
 
-  addRide: (bikeId: string, km: number, date: string, note?: string) => void
+  addRide: (bikeId: string, km: number, date: string, note?: string, durationMin?: number) => void
   removeRide: (id: string) => void
+
+  updateTrainingProfile: (patch: Partial<TrainingProfile>) => void
 
   addComponent: (
     bikeId: string,
@@ -36,6 +39,7 @@ export const useAppStore = create<AppState>()(
       bikes: [],
       components: [],
       rides: [],
+      trainingProfile: {},
 
       addBike: (name, discipline) => {
         const id = uid()
@@ -56,13 +60,17 @@ export const useAppStore = create<AppState>()(
         }))
       },
 
-      addRide: (bikeId, km, date, note) => {
+      addRide: (bikeId, km, date, note, durationMin) => {
         if (km <= 0) return
-        set((s) => ({ rides: [...s.rides, { id: uid(), bikeId, km, date, note }] }))
+        set((s) => ({ rides: [...s.rides, { id: uid(), bikeId, km, date, note, durationMin }] }))
       },
 
       removeRide: (id) => {
         set((s) => ({ rides: s.rides.filter((r) => r.id !== id) }))
+      },
+
+      updateTrainingProfile: (patch) => {
+        set((s) => ({ trainingProfile: { ...s.trainingProfile, ...patch } }))
       },
 
       addComponent: (bikeId, type, opts) => {

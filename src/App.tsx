@@ -6,6 +6,7 @@ import BikeDetail from './pages/BikeDetail'
 import TirePressure from './pages/TirePressure'
 import GearRatio from './pages/GearRatio'
 import BikeFit from './pages/BikeFit'
+import Training from './pages/Training'
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
         <Route path="/daektryk" element={<TirePressure />} />
         <Route path="/gear" element={<GearRatio />} />
         <Route path="/bikefit" element={<BikeFit />} />
+        <Route path="/traening" element={<Training />} />
       </Route>
     </Routes>
   )

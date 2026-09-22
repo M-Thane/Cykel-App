@@ -16,6 +16,7 @@ export const en: Dict = {
     tirePressure: 'Tire pressure',
     gear: 'Gearing',
     bikefit: 'Bike fit',
+    training: 'Training',
   },
 
   disciplines: {
@@ -96,6 +97,7 @@ export const en: Dict = {
       tirePressure: { label: 'Tire pressure', desc: 'Calculate tire pressure from weight and surface' },
       gear: { label: 'Gearing', desc: 'Ratios, rollout and speed' },
       bikefit: { label: 'Bike fit', desc: 'Saddle height and frame size' },
+      training: { label: 'Training', desc: 'Zones, weekly plan and your training overview' },
     },
   },
 
@@ -129,6 +131,8 @@ export const en: Dict = {
       subtitle: 'Log your rides to update km on the bike and all active wear parts.',
       km: 'Km',
       date: 'Date',
+      duration: 'Duration (min, optional)',
+      durationHint: 'Gives you hours and average speed under Training',
       note: 'Note (optional)',
       notePlaceholder: 'e.g. Sunday ride',
       add: 'Add',
@@ -314,6 +318,71 @@ export const en: Dict = {
       p1Post:
         ' based on common rules of thumb — not a replacement for a professional bike fit. Adjust in small steps (2-3 mm at a time on saddle height) and give your body a few rides to adapt before adjusting again.',
       p2: 'The stack/reach match is likewise a guideline — it compares the bike’s own geometry against a rule of thumb for how aggressive/relaxed a position typically suits your flexibility, not a physically measured fit.',
+    },
+  },
+
+  trainingGoals: {
+    udholdenhed: 'Endurance / build base',
+    fart: 'Get faster',
+    vaegttab: 'Weight loss / calorie burn',
+    event: 'Prepare for an event',
+    generel: 'General fitness',
+  },
+
+  workoutTypes: {
+    hvile: { name: 'Rest', desc: 'No training — recovery is part of progress.' },
+    endurance: { name: 'Endurance', desc: 'Easy, steady ride in zone 2 — you should be able to hold a conversation the whole ride.' },
+    interval: { name: 'Intervals', desc: 'Short, hard efforts (e.g. 4-6 × 3-5 min) with recovery in between.' },
+    tempo: { name: 'Tempo', desc: 'Steady, moderately hard effort — feels strong but sustainable for 20-40 min.' },
+    lang_tur: { name: 'Long ride', desc: 'The week’s longest ride, at an easy pace — builds endurance.' },
+    restitution: { name: 'Active recovery', desc: 'Very easy spin, just to keep the legs moving.' },
+  },
+
+  training: {
+    title: 'Personal trainer',
+    subtitle: 'Training zones, a weekly plan and an overview of your training — based on your numbers and logged rides.',
+    profile: {
+      title: 'Your profile',
+      subtitle: 'Fill in what you know — the rest of the page uses whatever you’ve entered.',
+      ftp: 'FTP (watts)',
+      ftpHint: 'Functional Threshold Power — the power you can hold for about 1 hour',
+      maxHr: 'Max heart rate (bpm)',
+      maxHrHint: 'Your actual measured max — use the real number instead of a formula if you know it',
+      weeklyGoalKm: 'Weekly km goal',
+      weeklyGoalDays: 'Training days/week',
+      goal: 'Goal',
+      chooseGoal: '— Choose goal —',
+    },
+    zones: {
+      title: 'Training zones',
+      powerTitle: 'Power zones (FTP)',
+      hrTitle: 'Heart rate zones',
+      emptyTitle: 'No zones yet',
+      emptyDesc: 'Enter FTP and/or max heart rate in the profile above to see your training zones.',
+      zoneCol: 'Zone',
+      rangeCol: 'Range',
+      powerZoneNames: ['Active recovery', 'Endurance', 'Tempo', 'Threshold', 'VO2max', 'Anaerobic capacity', 'Neuromuscular'],
+      hrZoneNames: ['Recovery', 'Endurance', 'Tempo', 'Threshold', 'Maximal'],
+    },
+    plan: {
+      title: 'Weekly plan',
+      subtitle: 'A generic weekly schedule based on your goal and training days — adjust to how your body responds.',
+      emptyTitle: 'Choose a goal and training days',
+      emptyDesc: 'Choose your goal and training days/week in the profile above to get a suggested weekly plan.',
+      weekdaysShort: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    },
+    analysis: {
+      title: 'Your training',
+      subtitle: 'Km per week over the last 8 weeks, based on all your logged rides across bikes.',
+      thisWeek: 'This week',
+      vsGoal: (km: string, goal: string) => `${km} of ${goal} km goal`,
+      daysRidden: (n: number, goal: number) => `${n} of ${goal} training days`,
+      noRides: 'No rides logged in the last 8 weeks yet.',
+      avgPace: (kmh: string) => `avg ${kmh} km/h`,
+    },
+    info: {
+      p1: 'The zones follow widely recognized models (Coggan power zones from FTP, %-of-max-HR zones) — not individual coaching. The weekly plan is a generic template, not a personalized training program.',
+      p2: 'The analysis only uses km and date from your logged rides. If you enter a duration for a ride, the app also shows hours and average speed for the week.',
     },
   },
 }
