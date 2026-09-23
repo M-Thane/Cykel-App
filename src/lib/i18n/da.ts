@@ -334,6 +334,10 @@ export const da = {
     defaultBike: 'Standardcykel for Strava-synk',
     defaultBikeHint: 'Nye ture fra Strava logges automatisk på denne cykel',
     chooseBike: '— Vælg cykel —',
+    importHistory: 'Hent min Strava-historik',
+    importHistoryBusy: 'Henter…',
+    importHistoryResult: (n: number) => `${n} ture importeret fra Strava.`,
+    importHistoryError: 'Kunne ikke hente Strava-historik. Prøv igen.',
   },
 
   trainingGoals: {

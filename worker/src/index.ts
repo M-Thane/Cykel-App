@@ -2,7 +2,15 @@ import type { Env } from './env'
 import { corsHeaders, errorJson, json } from './cors'
 import { newToken, signToken, verifyToken } from './jwt'
 import { pgDelete, pgInsert, pgSelect, pgUpdate, pgUpsert } from './db'
-import { exchangeCodeForToken, fetchActivity, fetchRecentActivities, freshAccessToken, isRideActivity, type StravaActivity } from './strava'
+import {
+  exchangeCodeForToken,
+  fetchActivitiesPage,
+  fetchActivity,
+  fetchRecentActivities,
+  freshAccessToken,
+  isRideActivity,
+  type StravaActivity,
+} from './strava'
 
 interface AppUserRow {
   id: string
@@ -229,6 +237,34 @@ async function handleApi(req: Request, env: Env, path: string): Promise<Response
   if (path === '/api/training-profile' && method === 'PATCH') {
     const rows = await pgUpsert(env, 'training_profiles', { ...body, user_id: user.id }, 'user_id')
     return json(env, rows[0])
+  }
+
+  // /api/import-strava-history -- one-time backfill of existing Strava activities
+  // (the webhook only catches activities created after the subscription was set up).
+  if (path === '/api/import-strava-history' && method === 'POST') {
+    if (!user.default_bike_id) return errorJson(env, 'no default bike set', 400)
+    const accessToken = await freshAccessToken(env, user)
+    const MAX_PAGES = 10
+    let imported = 0
+    for (let page = 1; page <= MAX_PAGES; page++) {
+      const activities = await fetchActivitiesPage(accessToken, page)
+      if (activities.length === 0) break
+      const rides = activities.filter(isRideActivity).map((a) => ({
+        user_id: user.id,
+        bike_id: user.default_bike_id,
+        date: a.start_date.slice(0, 10),
+        km: Math.round((a.distance / 1000) * 10) / 10,
+        duration_min: Math.round(a.moving_time / 60),
+        note: a.name,
+        strava_activity_id: a.id,
+      }))
+      if (rides.length > 0) {
+        await pgUpsert(env, 'rides', rides, 'strava_activity_id')
+        imported += rides.length
+      }
+      if (activities.length < 100) break
+    }
+    return json(env, { imported })
   }
 
   // /api/import -- one-time migration of a browser's local data into the account.

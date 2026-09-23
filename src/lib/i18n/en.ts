@@ -334,6 +334,10 @@ export const en: Dict = {
     defaultBike: 'Default bike for Strava sync',
     defaultBikeHint: 'New rides from Strava are automatically logged on this bike',
     chooseBike: '— Choose bike —',
+    importHistory: 'Fetch my Strava history',
+    importHistoryBusy: 'Fetching…',
+    importHistoryResult: (n: number) => `${n} rides imported from Strava.`,
+    importHistoryError: 'Could not fetch Strava history. Please try again.',
   },
 
   trainingGoals: {

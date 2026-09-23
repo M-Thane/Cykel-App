@@ -127,6 +127,7 @@ export const api = {
     request<ApiBike>(`/api/bikes/${id}`, { method: 'PATCH', body: JSON.stringify(patch) }),
   deleteBike: (id: string) => request<{ ok: true }>(`/api/bikes/${id}`, { method: 'DELETE' }),
   setDefaultBike: (bikeId: string) => request<{ ok: true }>('/api/default-bike', { method: 'PATCH', body: JSON.stringify({ bikeId }) }),
+  importStravaHistory: () => request<{ imported: number }>('/api/import-strava-history', { method: 'POST' }),
 
   createRide: (ride: { bikeId: string; date: string; km: number; note?: string; durationMin?: number }) =>
     request<ApiRide>('/api/rides', {

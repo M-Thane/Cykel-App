@@ -7,6 +7,7 @@ import { Button, Card, EmptyState, Field, Input, Select, SectionTitle } from '..
 import { fmtKm } from '../lib/format'
 import { BIKE_BRAND_LABELS, BIKE_MODEL_PRESETS, bikeModelLabel, type BikeMakeBrand } from '../lib/bikes'
 import { useLang } from '../lib/i18n/context'
+import { api } from '../lib/api/client'
 
 export default function Maintenance() {
   const { t, locale } = useLang()
@@ -16,6 +17,24 @@ export default function Maintenance() {
   const addBike = useAppStore((s) => s.addBike)
   const defaultBikeId = useAppStore((s) => s.defaultBikeId)
   const setDefaultBike = useAppStore((s) => s.setDefaultBike)
+  const loadState = useAppStore((s) => s.loadState)
+
+  const [importBusy, setImportBusy] = useState(false)
+  const [importResult, setImportResult] = useState<string | null>(null)
+
+  async function handleImportHistory() {
+    setImportBusy(true)
+    setImportResult(null)
+    try {
+      const { imported } = await api.importStravaHistory()
+      setImportResult(t.login.importHistoryResult(imported))
+      await loadState()
+    } catch {
+      setImportResult(t.login.importHistoryError)
+    } finally {
+      setImportBusy(false)
+    }
+  }
 
   const [showForm, setShowForm] = useState(false)
   const [name, setName] = useState('')
@@ -118,6 +137,14 @@ export default function Maintenance() {
               ))}
             </Select>
           </Field>
+          {defaultBikeId && (
+            <div className="mt-3 flex items-center gap-2">
+              <Button variant="secondary" onClick={handleImportHistory} disabled={importBusy}>
+                {importBusy ? t.login.importHistoryBusy : t.login.importHistory}
+              </Button>
+              {importResult && <span className="text-xs text-slate-400">{importResult}</span>}
+            </div>
+          )}
         </Card>
       )}
 

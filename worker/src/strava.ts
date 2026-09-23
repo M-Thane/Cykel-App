@@ -83,6 +83,14 @@ export async function fetchRecentActivities(accessToken: string, afterUnix: numb
   return res.json()
 }
 
+export async function fetchActivitiesPage(accessToken: string, page: number, perPage = 100): Promise<StravaActivity[]> {
+  const res = await fetch(`https://www.strava.com/api/v3/athlete/activities?page=${page}&per_page=${perPage}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  })
+  if (!res.ok) throw new Error(`strava list activities failed: ${res.status} ${await res.text()}`)
+  return res.json()
+}
+
 /** Only cycling-type activities are relevant to this app. */
 export function isRideActivity(a: StravaActivity): boolean {
   return ['Ride', 'VirtualRide', 'GravelRide', 'MountainBikeRide', 'EBikeRide'].includes(a.type)
