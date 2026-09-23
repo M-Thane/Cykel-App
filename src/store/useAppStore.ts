@@ -52,7 +52,10 @@ interface AppState {
   loaded: boolean
   error: string | null
 
+  lastLoadedAt: number | null
+
   loadState: () => Promise<void>
+  refreshIfStale: (minAgeMs?: number) => void
   reset: () => void
   dismissError: () => void
 
@@ -85,6 +88,7 @@ export const useAppStore = create<AppState>()((set, get) => ({
   loading: false,
   loaded: false,
   error: null,
+  lastLoadedAt: null,
 
   loadState: async () => {
     set({ loading: true, error: null })
@@ -98,13 +102,23 @@ export const useAppStore = create<AppState>()((set, get) => ({
         defaultBikeId: s.defaultBikeId,
         loading: false,
         loaded: true,
+        lastLoadedAt: Date.now(),
       })
     } catch (err) {
       set({ loading: false, error: errMsg(err) })
     }
   },
 
-  reset: () => set({ bikes: [], components: [], rides: [], trainingProfile: {}, defaultBikeId: null, loaded: false, error: null }),
+  /** Re-fetches from the server if the last load is older than minAgeMs (default 20s) -- cheap to call from window-focus or page-mount handlers without risking a refresh storm. */
+  refreshIfStale: (minAgeMs = 20_000) => {
+    const { lastLoadedAt, loading, loadState } = get()
+    if (loading) return
+    if (lastLoadedAt !== null && Date.now() - lastLoadedAt < minAgeMs) return
+    loadState()
+  },
+
+  reset: () =>
+    set({ bikes: [], components: [], rides: [], trainingProfile: {}, defaultBikeId: null, loaded: false, error: null, lastLoadedAt: null }),
 
   dismissError: () => set({ error: null }),
 

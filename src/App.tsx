@@ -17,12 +17,33 @@ export default function App() {
   const { isLoggedIn } = useAuth()
   const loadState = useAppStore((s) => s.loadState)
   const reset = useAppStore((s) => s.reset)
+  const refreshIfStale = useAppStore((s) => s.refreshIfStale)
 
   useEffect(() => {
     if (isLoggedIn) loadState()
     else reset()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoggedIn])
+
+  // Strava rides land in the database via a webhook the moment you finish a
+  // ride, but the app only ever reads that on demand -- refresh whenever you
+  // come back to the tab so newly synced rides (and goal progress) show up
+  // without needing a manual reload.
+  useEffect(() => {
+    if (!isLoggedIn) return
+    function onFocus() {
+      refreshIfStale()
+    }
+    function onVisible() {
+      if (document.visibilityState === 'visible') refreshIfStale()
+    }
+    window.addEventListener('focus', onFocus)
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      window.removeEventListener('focus', onFocus)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
+  }, [isLoggedIn, refreshIfStale])
 
   return (
     <Routes>

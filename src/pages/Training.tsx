@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { Info } from 'lucide-react'
 import { Card, EmptyState, Field, Input, Select, SectionTitle } from '../components/ui'
 import { useAppStore } from '../store/useAppStore'
@@ -19,6 +19,13 @@ export default function Training() {
   const profile = useAppStore((s) => s.trainingProfile)
   const rides = useAppStore((s) => s.rides)
   const updateTrainingProfile = useAppStore((s) => s.updateTrainingProfile)
+  const refreshIfStale = useAppStore((s) => s.refreshIfStale)
+
+  // Pick up Strava-synced rides from the last few minutes without requiring
+  // a full app reload -- goals/zones/plan are all derived from `rides`.
+  useEffect(() => {
+    refreshIfStale()
+  }, [refreshIfStale])
 
   const powerZones = useMemo(() => (profile.ftpWatts ? calcPowerZones(profile.ftpWatts) : null), [profile.ftpWatts])
   const hrZones = useMemo(() => (profile.maxHr ? calcHrZones(profile.maxHr) : null), [profile.maxHr])
