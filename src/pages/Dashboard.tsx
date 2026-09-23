@@ -5,6 +5,7 @@ import { useAppStore, totalKmForBike, componentWearPct, componentDisplayLabel } 
 import { Badge, Card, EmptyState, SectionTitle, Button } from '../components/ui'
 import { fmtKm } from '../lib/format'
 import { useLang } from '../lib/i18n/context'
+import ImportLocalDataBanner from '../components/ImportLocalDataBanner'
 
 export default function Dashboard() {
   const { t, locale } = useLang()
@@ -36,6 +37,8 @@ export default function Dashboard() {
   return (
     <div className="flex flex-col gap-5">
       <SectionTitle subtitle={t.dashboard.subtitle}>{t.dashboard.title}</SectionTitle>
+
+      <ImportLocalDataBanner />
 
       <div className="grid gap-3 sm:grid-cols-2">
         <Card>

@@ -1,7 +1,9 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { Bike, Gauge, Cog, Ruler, LayoutDashboard, HeartPulse } from 'lucide-react'
+import { Bike, Gauge, Cog, Ruler, LayoutDashboard, HeartPulse, LogOut, X } from 'lucide-react'
 import { useLang, type Lang } from '../lib/i18n/context'
 import type { Dict } from '../lib/i18n/da'
+import { useAuth } from '../lib/auth/context'
+import { useAppStore } from '../store/useAppStore'
 
 function navItems(t: Dict) {
   return [
@@ -41,6 +43,9 @@ function LanguageSwitcher() {
 export default function Layout() {
   const { t } = useLang()
   const NAV_ITEMS = navItems(t)
+  const { logout } = useAuth()
+  const error = useAppStore((s) => s.error)
+  const dismissError = useAppStore((s) => s.dismissError)
 
   return (
     <div className="min-h-dvh bg-slate-950 text-slate-100">
@@ -71,11 +76,26 @@ export default function Layout() {
               ))}
             </nav>
             <LanguageSwitcher />
+            <button
+              onClick={logout}
+              title={t.login.logout}
+              className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-900 hover:text-slate-200"
+            >
+              <LogOut size={16} />
+            </button>
           </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-5xl px-4 pb-24 pt-5 sm:pb-10">
+        {error && (
+          <div className="mb-4 flex items-center justify-between gap-2 rounded-lg border border-red-900 bg-red-950/60 px-3 py-2 text-sm text-red-300">
+            <span>{error}</span>
+            <button onClick={dismissError} className="shrink-0 text-red-400 hover:text-red-200">
+              <X size={14} />
+            </button>
+          </div>
+        )}
         <Outlet />
       </main>
 

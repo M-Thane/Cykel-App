@@ -321,6 +321,21 @@ export const da = {
     },
   },
 
+  login: {
+    subtitle: 'Log ind med Strava for at synkronisere dine ture automatisk på tværs af dine enheder.',
+    connectStrava: 'Forbind med Strava',
+    connecting: 'Logger ind…',
+    missingCode: 'Manglende login-kode fra Strava. Prøv at logge ind igen.',
+    exchangeFailed: 'Login mislykkedes. Prøv igen.',
+    logout: 'Log ud',
+    importPrompt: 'Vi fandt data gemt lokalt i denne browser fra før du loggede ind. Vil du importere dem til din konto?',
+    importButton: 'Importer mine data',
+    importDismiss: 'Nej tak, kassér dem',
+    defaultBike: 'Standardcykel for Strava-synk',
+    defaultBikeHint: 'Nye ture fra Strava logges automatisk på denne cykel',
+    chooseBike: '— Vælg cykel —',
+  },
+
   trainingGoals: {
     udholdenhed: 'Udholdenhed / opbyg base',
     fart: 'Blive hurtigere',

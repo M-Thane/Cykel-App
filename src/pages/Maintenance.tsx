@@ -14,6 +14,8 @@ export default function Maintenance() {
   const components = useAppStore((s) => s.components)
   const rides = useAppStore((s) => s.rides)
   const addBike = useAppStore((s) => s.addBike)
+  const defaultBikeId = useAppStore((s) => s.defaultBikeId)
+  const setDefaultBike = useAppStore((s) => s.setDefaultBike)
 
   const [showForm, setShowForm] = useState(false)
   const [name, setName] = useState('')
@@ -101,6 +103,21 @@ export default function Maintenance() {
               </Button>
             </div>
           </form>
+        </Card>
+      )}
+
+      {bikes.length > 0 && (
+        <Card>
+          <Field label={t.login.defaultBike} hint={t.login.defaultBikeHint}>
+            <Select value={defaultBikeId ?? ''} onChange={(e) => e.target.value && setDefaultBike(e.target.value)}>
+              <option value="">{t.login.chooseBike}</option>
+              {bikes.map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.name}
+                </option>
+              ))}
+            </Select>
+          </Field>
         </Card>
       )}
 

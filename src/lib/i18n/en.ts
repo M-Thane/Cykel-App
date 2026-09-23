@@ -321,6 +321,21 @@ export const en: Dict = {
     },
   },
 
+  login: {
+    subtitle: 'Log in with Strava to automatically sync your rides across your devices.',
+    connectStrava: 'Connect with Strava',
+    connecting: 'Logging in…',
+    missingCode: 'Missing login code from Strava. Try logging in again.',
+    exchangeFailed: 'Login failed. Please try again.',
+    logout: 'Log out',
+    importPrompt: 'We found data saved locally in this browser from before you logged in. Import it into your account?',
+    importButton: 'Import my data',
+    importDismiss: 'No thanks, discard it',
+    defaultBike: 'Default bike for Strava sync',
+    defaultBikeHint: 'New rides from Strava are automatically logged on this bike',
+    chooseBike: '— Choose bike —',
+  },
+
   trainingGoals: {
     udholdenhed: 'Endurance / build base',
     fart: 'Get faster',
