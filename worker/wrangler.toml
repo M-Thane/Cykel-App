@@ -12,8 +12,8 @@ crons = ["0 */6 * * *"]
 #   SUPABASE_SERVICE_ROLE_KEY
 #   APP_JWT_SECRET
 #   STRAVA_WEBHOOK_VERIFY_TOKEN
-STRAVA_CLIENT_ID = "REPLACE_WITH_STRAVA_CLIENT_ID"
-SUPABASE_URL = "https://REPLACE_WITH_PROJECT_REF.supabase.co"
+STRAVA_CLIENT_ID = "145080"
+SUPABASE_URL = "https://ltowpnwprzcqlcislwpp.supabase.co"
 # The GitHub Pages origin allowed to call this API.
 ALLOWED_ORIGIN = "https://m-thane.github.io"
 # Where Strava redirects back to after login.
