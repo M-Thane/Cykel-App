@@ -147,7 +147,12 @@ async function handleApi(req: Request, env: Env, path: string): Promise<Response
   if (isResponse(user)) return user
 
   const method = req.method
-  const body = method === 'POST' || method === 'PATCH' ? await req.json<Record<string, unknown>>() : null
+  let body: Record<string, unknown> | null = null
+  if (method === 'POST' || method === 'PATCH') {
+    body = await req
+      .json<Record<string, unknown>>()
+      .catch(() => ({}) as Record<string, unknown>)
+  }
 
   // /api/state
   if (path === '/api/state' && method === 'GET') {
@@ -323,15 +328,19 @@ async function handleApi(req: Request, env: Env, path: string): Promise<Response
 export default {
   async fetch(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(req.url)
+    try {
+      if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders(env) })
+      if (url.pathname === '/health') return json(env, { ok: true })
+      if (url.pathname === '/auth/strava/callback') return handleStravaCallback(req, env)
+      if (url.pathname === '/webhooks/strava' && req.method === 'GET') return handleStravaWebhookVerify(req, env)
+      if (url.pathname === '/webhooks/strava' && req.method === 'POST') return handleStravaWebhookEvent(req, env, ctx)
+      if (url.pathname.startsWith('/api/')) return handleApi(req, env, url.pathname)
 
-    if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders(env) })
-    if (url.pathname === '/health') return json(env, { ok: true })
-    if (url.pathname === '/auth/strava/callback') return handleStravaCallback(req, env)
-    if (url.pathname === '/webhooks/strava' && req.method === 'GET') return handleStravaWebhookVerify(req, env)
-    if (url.pathname === '/webhooks/strava' && req.method === 'POST') return handleStravaWebhookEvent(req, env, ctx)
-    if (url.pathname.startsWith('/api/')) return handleApi(req, env, url.pathname)
-
-    return errorJson(env, 'not found', 404)
+      return errorJson(env, 'not found', 404)
+    } catch (err) {
+      console.error(err)
+      return errorJson(env, err instanceof Error ? err.message : 'internal error', 500)
+    }
   },
 
   async scheduled(_event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
