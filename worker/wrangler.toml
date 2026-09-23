@@ -16,5 +16,7 @@ STRAVA_CLIENT_ID = "145080"
 SUPABASE_URL = "https://ltowpnwprzcqlcislwpp.supabase.co"
 # The GitHub Pages origin allowed to call this API.
 ALLOWED_ORIGIN = "https://m-thane.github.io"
-# Where Strava redirects back to after login.
-STRAVA_REDIRECT_URI = "https://m-thane.github.io/Cykel-App/#/strava-callback"
+# Where Strava redirects back to after login (no "#" -- Strava rejects a
+# fragment in redirect_uri; public/404.html turns this into the app's
+# hash route client-side). Not sent in the token exchange, informational only.
+STRAVA_REDIRECT_URI = "https://m-thane.github.io/Cykel-App/strava-callback"

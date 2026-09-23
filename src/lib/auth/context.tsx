@@ -2,7 +2,10 @@ import { createContext, useContext, useMemo, useState, type ReactNode } from 're
 import { getToken, setToken as persistToken } from '../api/client'
 
 const STRAVA_CLIENT_ID = '145080'
-const STRAVA_REDIRECT_URI = 'https://m-thane.github.io/Cykel-App/#/strava-callback'
+// No "#" here on purpose -- Strava rejects a redirect_uri containing a URL
+// fragment. GitHub Pages' 404.html (see public/404.html) turns this real
+// path back into the app's hash-based route once the browser lands on it.
+const STRAVA_REDIRECT_URI = 'https://m-thane.github.io/Cykel-App/strava-callback'
 
 interface AuthContextValue {
   isLoggedIn: boolean

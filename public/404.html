@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="da">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Cykel-App</title>
+  </head>
+  <body>
+    <script>
+      // GitHub Pages serves this file (with a 404 status) for any request
+      // path that isn't a real static file. We only ever land here for the
+      // Strava OAuth redirect, which must be a real path (Strava rejects a
+      // redirect_uri containing a "#"). Turn it into the app's hash-based
+      // route so the SPA router picks it up, keeping the query string
+      // (Strava's ?code=...&scope=...).
+      var base = '/Cykel-App/';
+      var path = location.pathname.startsWith(base) ? location.pathname.slice(base.length) : '';
+      location.replace(base + '#/' + path + location.search);
+    </script>
+  </body>
+</html>
