@@ -1,0 +1,38 @@
+name: Deploy Cykel-App API (Cloudflare Worker)
+
+on:
+  push:
+    branches: [claude/cycling-app-maintenance-tools-xexqge]
+    paths:
+      - 'worker/**'
+  workflow_dispatch:
+
+concurrency:
+  group: worker-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: worker
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: worker/package-lock.json
+      - run: npm ci
+      - name: Set Worker secrets
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          echo "${{ secrets.WORKER_STRAVA_CLIENT_SECRET }}" | npx wrangler secret put STRAVA_CLIENT_SECRET
+          echo "${{ secrets.WORKER_SUPABASE_SERVICE_ROLE_KEY }}" | npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY
+          echo "${{ secrets.WORKER_APP_JWT_SECRET }}" | npx wrangler secret put APP_JWT_SECRET
+          echo "${{ secrets.WORKER_STRAVA_WEBHOOK_VERIFY_TOKEN }}" | npx wrangler secret put STRAVA_WEBHOOK_VERIFY_TOKEN
+      - run: npx wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
