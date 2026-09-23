@@ -16,13 +16,25 @@ jobs:
   register:
     runs-on: ubuntu-latest
     steps:
-      - name: Create subscription
+      - name: Replace subscription (delete existing, then create)
         env:
           STRAVA_CLIENT_ID: '145080'
           STRAVA_CLIENT_SECRET: ${{ secrets.WORKER_STRAVA_CLIENT_SECRET }}
           STRAVA_WEBHOOK_VERIFY_TOKEN: ${{ secrets.WORKER_STRAVA_WEBHOOK_VERIFY_TOKEN }}
           CALLBACK_URL: ${{ inputs.callback_url }}
         run: |
+          echo "Existing subscriptions:"
+          curl -sS "https://www.strava.com/api/v3/push_subscriptions?client_id=$STRAVA_CLIENT_ID&client_secret=$STRAVA_CLIENT_SECRET" | tee existing.json
+          echo
+
+          EXISTING_ID=$(node -e "console.log((JSON.parse(require('fs').readFileSync('existing.json','utf8'))[0]||{}).id||'')")
+          if [ -n "$EXISTING_ID" ]; then
+            echo "Deleting existing subscription $EXISTING_ID"
+            curl -sS -X DELETE "https://www.strava.com/api/v3/push_subscriptions/$EXISTING_ID?client_id=$STRAVA_CLIENT_ID&client_secret=$STRAVA_CLIENT_SECRET"
+            echo
+          fi
+
+          echo "Creating subscription for $CALLBACK_URL"
           curl -sS -X POST https://www.strava.com/api/v3/push_subscriptions \
             -F client_id="$STRAVA_CLIENT_ID" \
             -F client_secret="$STRAVA_CLIENT_SECRET" \
@@ -33,4 +45,5 @@ jobs:
             echo "Subscription created."
           else
             echo "Did not see a subscription id in the response -- check the output above."
+            exit 1
           fi
