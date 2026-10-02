@@ -403,6 +403,19 @@ export const da = {
     info: {
       p1: 'Zonerne følger almindeligt anerkendte modeller (Coggan-effektzoner ud fra FTP, %-af-makspuls-zoner) — ikke individuel coaching. Ugeplanen er en generisk skabelon, ikke et personligt træningsprogram.',
       p2: 'Analysen bruger kun km og dato fra dine logget ture. Angiver du varighed ved en tur, viser appen også timer og snitfart for ugen.',
+      p3: 'CTL/ATL/TSB er skøn ud fra snit-effekt eller snitpuls pr. tur sat i forhold til FTP/makspuls — ikke den officielle Normalized Power-baserede TSS (det kræver sekund-for-sekund data, som Strava ikke deler her). Brug tallene som en grov pejling af belastning, ikke en præcis måling.',
+    },
+    pmc: {
+      title: 'Form (CTL/ATL/TSB)',
+      subtitle: 'Din træningsbelastning over tid — opbygget fitness, aktuel træthed og om du er frisk eller presset.',
+      emptyTitle: 'Ikke nok data endnu',
+      emptyDesc: 'Angiv FTP og/eller makspuls i profilen ovenfor, og log ture med varighed, for at se din træningsbelastning over tid.',
+      ctl: 'CTL (fitness)',
+      atl: 'ATL (træthed)',
+      tsb: 'TSB (form)',
+      tsbFresh: 'Frisk',
+      tsbNeutral: 'Neutral',
+      tsbTired: 'Presset',
     },
     latestRide: {
       title: 'Seneste tur',

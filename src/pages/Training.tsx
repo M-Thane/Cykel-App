@@ -10,6 +10,7 @@ import {
   assessLatestRide,
   calcHrZones,
   calcPowerZones,
+  computePmc,
   currentWeekSummary,
   generateWeekPlan,
   weeklySummaries,
@@ -17,6 +18,7 @@ import {
 import type { TrainingGoal } from '../types'
 import { useLang } from '../lib/i18n/context'
 import { fmtDate } from '../lib/format'
+import { PmcChart } from '../components/PmcChart'
 
 export default function Training() {
   const { t, locale } = useLang()
@@ -63,6 +65,10 @@ export default function Training() {
   const thisWeek = useMemo(() => currentWeekSummary(rides), [rides])
   const maxWeekKm = Math.max(1, ...weeks.map((w) => w.km))
   const hasAnyRideInWindow = weeks.some((w) => w.rideCount > 0)
+
+  const pmc = useMemo(() => computePmc(rides, profile, 90), [rides, profile])
+  const latestPmc = pmc.length > 0 ? pmc[pmc.length - 1] : null
+  const tsbTone = latestPmc ? (latestPmc.tsb >= 5 ? 'fresh' : latestPmc.tsb <= -10 ? 'tired' : 'neutral') : null
 
   const latestRide = useMemo(() => assessLatestRide(rides, weekPlan, powerZones, hrZones), [rides, weekPlan, powerZones, hrZones])
   const latestRideTypeName = latestRide?.plannedType ? t.workoutTypes[latestRide.plannedType].name : ''
@@ -360,11 +366,47 @@ export default function Training() {
         )}
       </div>
 
+      <div>
+        <SectionTitle subtitle={t.training.pmc.subtitle}>{t.training.pmc.title}</SectionTitle>
+        {!latestPmc ? (
+          <EmptyState title={t.training.pmc.emptyTitle} description={t.training.pmc.emptyDesc} />
+        ) : (
+          <Card>
+            <div className="mb-4 grid grid-cols-3 gap-3">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{t.training.pmc.ctl}</p>
+                <p className="mt-1 text-2xl font-semibold text-sky-400">{latestPmc.ctl.toFixed(1)}</p>
+              </div>
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{t.training.pmc.atl}</p>
+                <p className="mt-1 text-2xl font-semibold text-amber-500">{latestPmc.atl.toFixed(1)}</p>
+              </div>
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{t.training.pmc.tsb}</p>
+                <p
+                  className={`mt-1 text-2xl font-semibold ${
+                    tsbTone === 'fresh' ? 'text-emerald-400' : tsbTone === 'tired' ? 'text-red-400' : 'text-slate-300'
+                  }`}
+                >
+                  {latestPmc.tsb > 0 ? '+' : ''}
+                  {latestPmc.tsb.toFixed(1)}
+                </p>
+                <p className="text-xs text-slate-500">
+                  {tsbTone === 'fresh' ? t.training.pmc.tsbFresh : tsbTone === 'tired' ? t.training.pmc.tsbTired : t.training.pmc.tsbNeutral}
+                </p>
+              </div>
+            </div>
+            <PmcChart points={pmc} locale={locale} ctlLabel={t.training.pmc.ctl} atlLabel={t.training.pmc.atl} />
+          </Card>
+        )}
+      </div>
+
       <Card className="flex gap-2.5 text-sm text-slate-400">
         <Info size={16} className="mt-0.5 shrink-0 text-slate-500" />
         <div>
           <p>{t.training.info.p1}</p>
           <p className="mt-1.5">{t.training.info.p2}</p>
+          <p className="mt-1.5">{t.training.info.p3}</p>
         </div>
       </Card>
     </div>

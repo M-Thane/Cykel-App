@@ -1,4 +1,4 @@
-import type { RideLog, TrainingGoal } from '../types'
+import type { RideLog, TrainingGoal, TrainingProfile } from '../types'
 
 export const TRAINING_GOALS: TrainingGoal[] = ['udholdenhed', 'fart', 'vaegttab', 'event', 'generel']
 
@@ -247,4 +247,92 @@ export function assessLatestRide(
   }
 
   return { ride: latest, plannedType, checks }
+}
+
+// --- Performance Management Chart: CTL (fitness) / ATL (fatigue) / TSB (form) ---
+// Standard Banister-model exponentially-weighted rolling averages of daily
+// Training Stress Score, as used by TrainingPeaks/Strava/intervals.icu.
+
+const CTL_DAYS = 42
+const ATL_DAYS = 7
+
+function addDaysIso(dateIso: string, days: number): string {
+  const [y, m, d] = dateIso.split('-').map(Number)
+  const utc = new Date(Date.UTC(y, m - 1, d))
+  utc.setUTCDate(utc.getUTCDate() + days)
+  return utc.toISOString().slice(0, 10)
+}
+
+/**
+ * Estimated TSS for a ride. Needs a duration plus either avg watts + FTP,
+ * or avg heart rate + max HR -- returns null otherwise.
+ *
+ * This is a simplified estimate: real TSS uses Normalized Power (from a
+ * second-by-second power stream), which Strava's activity summary doesn't
+ * give us, so average power/HR is used as a stand-in for intensity. That
+ * underestimates the true score for rides with hard, variable efforts
+ * (intervals), which the UI calls out rather than presenting as exact.
+ */
+function estimateRideTss(ride: RideLog, profile: TrainingProfile): number | null {
+  const hours = ride.durationMin ? ride.durationMin / 60 : null
+  if (!hours || hours <= 0) return null
+  if (ride.avgWatts != null && profile.ftpWatts) {
+    const intensity = ride.avgWatts / profile.ftpWatts
+    return hours * intensity * intensity * 100
+  }
+  if (ride.avgHeartrate != null && profile.maxHr) {
+    const intensity = ride.avgHeartrate / profile.maxHr
+    return hours * intensity * intensity * 100
+  }
+  return null
+}
+
+export interface PmcPoint {
+  date: string
+  tss: number
+  ctl: number
+  atl: number
+  tsb: number
+}
+
+/**
+ * Daily fitness (CTL), fatigue (ATL) and form (TSB) for the last `windowDays`
+ * days, estimated from logged rides. Returns [] when there isn't enough data
+ * to estimate TSS for any ride (no FTP/max HR in the profile, or no ride has
+ * duration + power/HR) -- the UI should show an explicit "not enough data"
+ * state rather than a flat, meaningless curve.
+ *
+ * The rolling averages are seeded from the earliest ride with usable data
+ * (even if that's before the display window) so CTL/ATL have ramped up
+ * realistically by the time the returned window starts.
+ */
+export function computePmc(rides: RideLog[], profile: TrainingProfile, windowDays = 90): PmcPoint[] {
+  const tssByDate = new Map<string, number>()
+  let hasAnyTss = false
+  for (const r of rides) {
+    const tss = estimateRideTss(r, profile)
+    if (tss == null) continue
+    hasAnyTss = true
+    tssByDate.set(r.date, (tssByDate.get(r.date) ?? 0) + tss)
+  }
+  if (!hasAnyTss) return []
+
+  const earliest = [...tssByDate.keys()].sort()[0]
+  const today = todayLocalIso()
+
+  const points: PmcPoint[] = []
+  let ctl = 0
+  let atl = 0
+  let cursor = earliest
+  while (cursor <= today) {
+    const tss = tssByDate.get(cursor) ?? 0
+    const tsb = ctl - atl // form entering this day, before today's session
+    ctl = ctl + (tss - ctl) / CTL_DAYS
+    atl = atl + (tss - atl) / ATL_DAYS
+    points.push({ date: cursor, tss, ctl, atl, tsb })
+    cursor = addDaysIso(cursor, 1)
+  }
+
+  const cutoff = addDaysIso(today, -windowDays)
+  return points.filter((p) => p.date >= cutoff)
 }

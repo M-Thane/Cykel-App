@@ -403,6 +403,19 @@ export const en: Dict = {
     info: {
       p1: 'The zones follow widely recognized models (Coggan power zones from FTP, %-of-max-HR zones) — not individual coaching. The weekly plan is a generic template, not a personalized training program.',
       p2: 'The analysis only uses km and date from your logged rides. If you enter a duration for a ride, the app also shows hours and average speed for the week.',
+      p3: "CTL/ATL/TSB are estimated from each ride's average power or heart rate relative to your FTP/max HR — not the official Normalized-Power-based TSS (that needs second-by-second data Strava doesn't share here). Use the numbers as a rough gauge of load, not a precise measurement.",
+    },
+    pmc: {
+      title: 'Form (CTL/ATL/TSB)',
+      subtitle: 'Your training load over time — fitness built up, current fatigue, and whether you\'re fresh or tired.',
+      emptyTitle: 'Not enough data yet',
+      emptyDesc: 'Enter FTP and/or max heart rate in the profile above, and log rides with a duration, to see your training load over time.',
+      ctl: 'CTL (fitness)',
+      atl: 'ATL (fatigue)',
+      tsb: 'TSB (form)',
+      tsbFresh: 'Fresh',
+      tsbNeutral: 'Neutral',
+      tsbTired: 'Tired',
     },
     latestRide: {
       title: 'Latest ride',
