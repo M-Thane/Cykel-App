@@ -100,23 +100,37 @@ export interface WeekSummary {
   hours: number | null
 }
 
+// All date math below is done with Date.UTC/getUTCDay/setUTCDate on purpose:
+// mixing local-time Date methods with toISOString() (which is always UTC)
+// silently shifts dates by a day in any timezone ahead of UTC, which broke
+// week-matching for every ride for anyone not in UTC+0.
 function mondayOfIso(dateIso: string): string {
-  const d = new Date(dateIso + 'T00:00:00')
-  const dow = (d.getDay() + 6) % 7 // 0 = Monday
-  d.setDate(d.getDate() - dow)
-  return d.toISOString().slice(0, 10)
+  const [y, m, d] = dateIso.split('-').map(Number)
+  const utc = new Date(Date.UTC(y, m - 1, d))
+  const dow = (utc.getUTCDay() + 6) % 7 // 0 = Monday
+  utc.setUTCDate(utc.getUTCDate() - dow)
+  return utc.toISOString().slice(0, 10)
+}
+
+/** Today's calendar date (in the viewer's local timezone) as an ISO date string. */
+function todayLocalIso(): string {
+  const d = new Date()
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
 }
 
 /** Groups all rides into ISO (Monday-start) weeks, returning the last `numWeeks` weeks oldest-first, including empty weeks. */
 export function weeklySummaries(rides: RideLog[], numWeeks: number): WeekSummary[] {
-  const today = new Date()
-  const currentMonday = mondayOfIso(today.toISOString().slice(0, 10))
+  const currentMonday = mondayOfIso(todayLocalIso())
+  const [cy, cm, cd] = currentMonday.split('-').map(Number)
 
   const weeks: WeekSummary[] = []
   for (let i = numWeeks - 1; i >= 0; i--) {
-    const d = new Date(currentMonday + 'T00:00:00')
-    d.setDate(d.getDate() - i * 7)
-    weeks.push({ weekStartIso: d.toISOString().slice(0, 10), km: 0, rideCount: 0, hours: null })
+    const utc = new Date(Date.UTC(cy, cm - 1, cd))
+    utc.setUTCDate(utc.getUTCDate() - i * 7)
+    weeks.push({ weekStartIso: utc.toISOString().slice(0, 10), km: 0, rideCount: 0, hours: null })
   }
 
   const byWeek = new Map(weeks.map((w) => [w.weekStartIso, w]))
