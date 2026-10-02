@@ -58,10 +58,19 @@ create table if not exists rides (
   km numeric not null,
   note text,
   duration_min numeric,
+  -- from Strava, when the activity had a paired HR monitor/power meter.
+  -- Used to compare a ride's actual intensity against the training plan.
+  avg_heartrate numeric,
+  avg_watts numeric,
   -- set when the ride was created from a Strava activity via the webhook,
   -- used to avoid importing the same activity twice.
   strava_activity_id bigint unique
 );
+
+-- Safe to re-run: adds these columns to a database that already ran this
+-- file before they existed.
+alter table rides add column if not exists avg_heartrate numeric;
+alter table rides add column if not exists avg_watts numeric;
 
 create table if not exists training_profiles (
   user_id uuid primary key references app_users(id) on delete cascade,

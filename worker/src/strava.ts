@@ -65,6 +65,9 @@ export interface StravaActivity {
   moving_time: number // seconds
   start_date: string // ISO
   type: string
+  // present only when the activity had a paired HR monitor/power meter
+  average_heartrate?: number
+  average_watts?: number
 }
 
 export async function fetchActivity(accessToken: string, activityId: number): Promise<StravaActivity> {

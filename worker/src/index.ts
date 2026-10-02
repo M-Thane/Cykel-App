@@ -52,6 +52,8 @@ async function importActivityAsRide(env: Env, user: AppUserRow, activity: Strava
       km: Math.round((activity.distance / 1000) * 10) / 10,
       duration_min: Math.round(activity.moving_time / 60),
       note: activity.name,
+      avg_heartrate: activity.average_heartrate ?? null,
+      avg_watts: activity.average_watts ?? null,
       strava_activity_id: activity.id,
     },
     'strava_activity_id',
@@ -265,6 +267,8 @@ async function handleApi(req: Request, env: Env, path: string): Promise<Response
         km: Math.round((a.distance / 1000) * 10) / 10,
         duration_min: Math.round(a.moving_time / 60),
         note: a.name,
+        avg_heartrate: a.average_heartrate ?? null,
+        avg_watts: a.average_watts ?? null,
         strava_activity_id: a.id,
       }))
       if (rides.length > 0) {
