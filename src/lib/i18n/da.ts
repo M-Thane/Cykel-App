@@ -132,6 +132,7 @@ export const da = {
       date: 'Dato',
       duration: 'Varighed (min, valgfri)',
       durationHint: 'Giver dig timer og snitfart under Træning',
+      moveToBike: 'Flyt turen til en anden cykel',
       note: 'Note (valgfri)',
       notePlaceholder: 'fx Søndagstur',
       add: 'Tilføj',

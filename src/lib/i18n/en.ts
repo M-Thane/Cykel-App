@@ -133,6 +133,7 @@ export const en: Dict = {
       date: 'Date',
       duration: 'Duration (min, optional)',
       durationHint: 'Gives you hours and average speed under Training',
+      moveToBike: 'Move this ride to a different bike',
       note: 'Note (optional)',
       notePlaceholder: 'e.g. Sunday ride',
       add: 'Add',

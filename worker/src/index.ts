@@ -198,6 +198,10 @@ async function handleApi(req: Request, env: Env, path: string): Promise<Response
     return json(env, rows[0], 201)
   }
   const rideMatch = path.match(/^\/api\/rides\/([^/]+)$/)
+  if (rideMatch && method === 'PATCH') {
+    const rows = await pgUpdate(env, 'rides', `id=eq.${rideMatch[1]}&user_id=eq.${user.id}`, body!)
+    return json(env, rows[0])
+  }
   if (rideMatch && method === 'DELETE') {
     await pgDelete(env, 'rides', `id=eq.${rideMatch[1]}&user_id=eq.${user.id}`)
     return json(env, { ok: true })

@@ -134,6 +134,8 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ bike_id: ride.bikeId, date: ride.date, km: ride.km, note: ride.note, duration_min: ride.durationMin }),
     }),
+  updateRide: (id: string, patch: { bikeId?: string }) =>
+    request<ApiRide>(`/api/rides/${id}`, { method: 'PATCH', body: JSON.stringify({ bike_id: patch.bikeId }) }),
   deleteRide: (id: string) => request<{ ok: true }>(`/api/rides/${id}`, { method: 'DELETE' }),
 
   createComponent: (c: {

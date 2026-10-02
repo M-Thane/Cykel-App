@@ -25,11 +25,21 @@ export default function BikeDetail() {
   const { t, locale } = useLang()
   const { bikeId } = useParams()
   const navigate = useNavigate()
-  const bike = useAppStore((s) => s.bikes.find((b) => b.id === bikeId))
+  const allBikes = useAppStore((s) => s.bikes)
+  const bike = allBikes.find((b) => b.id === bikeId)
   const allRides = useAppStore((s) => s.rides)
   const allComponents = useAppStore((s) => s.components)
-  const { updateBike, removeBike, addRide, removeRide, addComponent, replaceComponent, removeComponent, updateComponent } =
-    useAppStore()
+  const {
+    updateBike,
+    removeBike,
+    addRide,
+    removeRide,
+    moveRideToBike,
+    addComponent,
+    replaceComponent,
+    removeComponent,
+    updateComponent,
+  } = useAppStore()
 
   const rides = useMemo(() => allRides.filter((r) => r.bikeId === bikeId), [allRides, bikeId])
   const components = useMemo(() => allComponents.filter((c) => c.bikeId === bikeId), [allComponents, bikeId])
@@ -185,16 +195,32 @@ export default function BikeDetail() {
         {sortedRides.length > 0 && (
           <div className="mt-4 max-h-56 divide-y divide-slate-800 overflow-y-auto rounded-lg border border-slate-800">
             {sortedRides.map((r) => (
-              <div key={r.id} className="flex items-center justify-between px-3 py-2 text-sm">
-                <div>
+              <div key={r.id} className="flex items-center justify-between gap-2 px-3 py-2 text-sm">
+                <div className="min-w-0">
                   <span className="text-slate-200">{fmtKm(r.km, locale)}</span>
                   <span className="ml-2 text-slate-500">{fmtDate(r.date, locale)}</span>
                   {r.durationMin && <span className="ml-2 text-slate-600">· {r.durationMin} min</span>}
                   {r.note && <span className="ml-2 text-slate-600">· {r.note}</span>}
                 </div>
-                <button onClick={() => removeRide(r.id)} className="text-slate-600 hover:text-red-400">
-                  <Trash2 size={14} />
-                </button>
+                <div className="flex shrink-0 items-center gap-2">
+                  {allBikes.length > 1 && (
+                    <select
+                      value={r.bikeId}
+                      onChange={(e) => moveRideToBike(r.id, e.target.value)}
+                      title={t.bikeDetail.rideLog.moveToBike}
+                      className="rounded border border-slate-700 bg-slate-950 px-1.5 py-1 text-xs text-slate-300 outline-none focus:border-brand-500"
+                    >
+                      {allBikes.map((b) => (
+                        <option key={b.id} value={b.id}>
+                          {b.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                  <button onClick={() => removeRide(r.id)} className="text-slate-600 hover:text-red-400">
+                    <Trash2 size={14} />
+                  </button>
+                </div>
               </div>
             ))}
           </div>

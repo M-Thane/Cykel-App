@@ -65,6 +65,7 @@ interface AppState {
   setDefaultBike: (bikeId: string) => void
 
   addRide: (bikeId: string, km: number, date: string, note?: string, durationMin?: number) => void
+  moveRideToBike: (id: string, bikeId: string) => void
   removeRide: (id: string) => void
 
   updateTrainingProfile: (patch: Partial<TrainingProfile>) => void
@@ -154,6 +155,11 @@ export const useAppStore = create<AppState>()((set, get) => ({
       .createRide({ bikeId, date, km, note, durationMin })
       .then((row) => set((s) => ({ rides: [...s.rides, rideFromApi(row)] })))
       .catch((err) => set({ error: errMsg(err) }))
+  },
+
+  moveRideToBike: (id, bikeId) => {
+    set((s) => ({ rides: s.rides.map((r) => (r.id === id ? { ...r, bikeId } : r)) }))
+    api.updateRide(id, { bikeId }).catch((err) => set({ error: errMsg(err) }))
   },
 
   removeRide: (id) => {
