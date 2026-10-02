@@ -92,6 +92,54 @@ export function generateWeekPlan(goal: TrainingGoal, daysPerWeek: number): PlanD
   return week
 }
 
+// --- Feeling-based plan adjustment ---
+// RPE (rate of perceived exertion) the rider logs per ride: 1 = very easy, 5 = very hard.
+
+const RPE_HIGH = 4.3 // avg RPE at/above this => recent rides felt hard, lighten the week
+const RPE_LOW = 1.8 // avg RPE at/below this => recent rides felt easy, add a bit more
+
+/** Average RPE across rides within the last `days` days that have one logged. Null if none do. */
+export function recentAvgRpe(rides: RideLog[], days = 10): number | null {
+  const cutoff = addDaysIso(todayLocalIso(), -days)
+  const withRpe = rides.filter((r) => r.rpe != null && r.date >= cutoff)
+  if (withRpe.length === 0) return null
+  return withRpe.reduce((sum, r) => sum + (r.rpe as number), 0) / withRpe.length
+}
+
+export type PlanAdjustment = 'lightened' | 'intensified' | 'none'
+
+/**
+ * Softens or sharpens one day of the generated week plan based on how hard
+ * recent rides felt (self-reported RPE) -- a high recent RPE drops the
+ * hardest session to endurance, a consistently low one upgrades one
+ * endurance day to tempo. Returns the original plan unchanged if there's no
+ * recent RPE data, or no day it makes sense to adjust.
+ */
+export function adjustWeekPlanForFeeling(plan: PlanDay[], avgRpe: number | null): { plan: PlanDay[]; adjustment: PlanAdjustment } {
+  if (avgRpe == null) return { plan, adjustment: 'none' }
+
+  if (avgRpe >= RPE_HIGH) {
+    const intervalIdx = plan.findIndex((d) => d.type === 'interval')
+    const hardIdx = intervalIdx >= 0 ? intervalIdx : plan.findIndex((d) => d.type === 'tempo')
+    if (hardIdx >= 0) {
+      const next = plan.map((d, i) => (i === hardIdx ? { ...d, type: 'endurance' as WorkoutType } : d))
+      return { plan: next, adjustment: 'lightened' }
+    }
+    return { plan, adjustment: 'none' }
+  }
+
+  if (avgRpe <= RPE_LOW) {
+    const easyIdx = plan.findIndex((d) => d.type === 'endurance')
+    if (easyIdx >= 0) {
+      const next = plan.map((d, i) => (i === easyIdx ? { ...d, type: 'tempo' as WorkoutType } : d))
+      return { plan: next, adjustment: 'intensified' }
+    }
+    return { plan, adjustment: 'none' }
+  }
+
+  return { plan, adjustment: 'none' }
+}
+
 // --- Ride analysis ---
 export interface WeekSummary {
   weekStartIso: string

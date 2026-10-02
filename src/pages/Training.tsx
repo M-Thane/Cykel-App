@@ -7,18 +7,59 @@ import { fmtKm } from '../lib/format'
 import { api } from '../lib/api/client'
 import {
   TRAINING_GOALS,
+  adjustWeekPlanForFeeling,
   assessLatestRide,
   calcHrZones,
   calcPowerZones,
   computePmc,
   currentWeekSummary,
   generateWeekPlan,
+  recentAvgRpe,
   weeklySummaries,
 } from '../lib/training'
-import type { TrainingGoal } from '../types'
+import type { RideLog, TrainingGoal } from '../types'
 import { useLang } from '../lib/i18n/context'
+import type { Dict } from '../lib/i18n/da'
 import { fmtDate } from '../lib/format'
 import { PmcChart } from '../components/PmcChart'
+
+type LatestRideLabels = Dict['training']['latestRide']
+
+function RideFeelingForm({ ride, labels, onSave }: { ride: RideLog; labels: LatestRideLabels; onSave: (rpe: number, note?: string) => void }) {
+  const [rpeDraft, setRpeDraft] = useState<number | null>(ride.rpe ?? null)
+  const [noteDraft, setNoteDraft] = useState(ride.feelingNote ?? '')
+
+  return (
+    <div className="mb-4 rounded-lg border border-slate-800 bg-slate-950/40 p-3">
+      <p className="mb-2 text-xs font-medium text-slate-300">{labels.feelingQuestion}</p>
+      <div className="mb-2 flex gap-1.5">
+        {labels.rpeScale.map((label, i) => {
+          const value = i + 1
+          return (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setRpeDraft(value)}
+              className={`flex-1 rounded-lg border px-1 py-1.5 text-[10px] font-medium transition-colors ${
+                rpeDraft === value ? 'border-brand-500 bg-brand-900/50 text-brand-300' : 'border-slate-700 text-slate-400 hover:border-slate-600'
+              }`}
+            >
+              {label}
+            </button>
+          )
+        })}
+      </div>
+      <Input value={noteDraft} onChange={(e) => setNoteDraft(e.target.value)} placeholder={labels.feelingNotePlaceholder} className="mb-2" />
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <Button variant="secondary" onClick={() => rpeDraft != null && onSave(rpeDraft, noteDraft.trim() || undefined)} disabled={rpeDraft == null}>
+          {labels.saveFeeling}
+        </Button>
+        {ride.rpe != null && <span className="text-xs text-slate-500">{labels.feelingSaved(labels.rpeScale[ride.rpe - 1])}</span>}
+      </div>
+      <p className="mt-2 text-[11px] text-slate-500">{labels.feelingInfo}</p>
+    </div>
+  )
+}
 
 export default function Training() {
   const { t, locale } = useLang()
@@ -26,6 +67,7 @@ export default function Training() {
   const rides = useAppStore((s) => s.rides)
   const defaultBikeId = useAppStore((s) => s.defaultBikeId)
   const updateTrainingProfile = useAppStore((s) => s.updateTrainingProfile)
+  const logRideFeeling = useAppStore((s) => s.logRideFeeling)
   const refreshIfStale = useAppStore((s) => s.refreshIfStale)
   const loadState = useAppStore((s) => s.loadState)
 
@@ -56,9 +98,14 @@ export default function Training() {
   const hrZones = useMemo(() => (profile.maxHr ? calcHrZones(profile.maxHr) : null), [profile.maxHr])
 
   const daysPerWeek = profile.weeklyGoalDays ?? 3
-  const weekPlan = useMemo(
+  const rawWeekPlan = useMemo(
     () => (profile.goal ? generateWeekPlan(profile.goal, daysPerWeek) : null),
     [profile.goal, daysPerWeek],
+  )
+  const avgRpe = useMemo(() => recentAvgRpe(rides, 10), [rides])
+  const { plan: weekPlan, adjustment: planAdjustment } = useMemo(
+    () => (rawWeekPlan ? adjustWeekPlanForFeeling(rawWeekPlan, avgRpe) : { plan: null, adjustment: 'none' as const }),
+    [rawWeekPlan, avgRpe],
   )
 
   const weeks = useMemo(() => weeklySummaries(rides, 8), [rides])
@@ -70,7 +117,7 @@ export default function Training() {
   const latestPmc = pmc.length > 0 ? pmc[pmc.length - 1] : null
   const tsbTone = latestPmc ? (latestPmc.tsb >= 5 ? 'fresh' : latestPmc.tsb <= -10 ? 'tired' : 'neutral') : null
 
-  const latestRide = useMemo(() => assessLatestRide(rides, weekPlan, powerZones, hrZones), [rides, weekPlan, powerZones, hrZones])
+  const latestRide = useMemo(() => assessLatestRide(rides, rawWeekPlan, powerZones, hrZones), [rides, rawWeekPlan, powerZones, hrZones])
   const latestRideTypeName = latestRide?.plannedType ? t.workoutTypes[latestRide.plannedType].name : ''
   const wentWell: string[] = []
   const toImprove: string[] = []
@@ -221,6 +268,15 @@ export default function Training() {
           <EmptyState title={t.training.plan.emptyTitle} description={t.training.plan.emptyDesc} />
         ) : (
           <Card>
+            {planAdjustment !== 'none' && avgRpe != null && (
+              <p
+                className={`mb-3 rounded-lg px-3 py-2 text-xs ${
+                  planAdjustment === 'lightened' ? 'bg-amber-900/30 text-amber-300' : 'bg-sky-900/30 text-sky-300'
+                }`}
+              >
+                {planAdjustment === 'lightened' ? t.training.plan.lightened(avgRpe.toFixed(1)) : t.training.plan.intensified(avgRpe.toFixed(1))}
+              </p>
+            )}
             <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
               {weekPlan.map((day) => (
                 <div key={day.dayIdx} className="flex flex-col items-center gap-1 rounded-lg border border-slate-800 p-1.5 text-center sm:p-2">
@@ -286,6 +342,13 @@ export default function Training() {
                 </div>
               )}
             </div>
+
+            <RideFeelingForm
+              key={latestRide.ride.id}
+              ride={latestRide.ride}
+              labels={t.training.latestRide}
+              onSave={(rpe, note) => logRideFeeling(latestRide.ride.id, rpe, note)}
+            />
 
             {!weekPlan ? (
               <p className="text-sm text-slate-400">{t.training.latestRide.noPlanMessage}</p>

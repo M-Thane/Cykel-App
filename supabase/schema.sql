@@ -62,6 +62,12 @@ create table if not exists rides (
   -- Used to compare a ride's actual intensity against the training plan.
   avg_heartrate numeric,
   avg_watts numeric,
+  -- subjective, user-entered: how hard the ride felt (1 = very easy .. 5 =
+  -- very hard) and an optional free-text note. Strava has no concept of
+  -- this, so it's only ever set from within the app. Used to lighten or
+  -- sharpen the next generated week plan based on how recent rides felt.
+  rpe smallint,
+  feeling_note text,
   -- set when the ride was created from a Strava activity via the webhook,
   -- used to avoid importing the same activity twice.
   strava_activity_id bigint unique
@@ -71,6 +77,8 @@ create table if not exists rides (
 -- file before they existed.
 alter table rides add column if not exists avg_heartrate numeric;
 alter table rides add column if not exists avg_watts numeric;
+alter table rides add column if not exists rpe smallint;
+alter table rides add column if not exists feeling_note text;
 
 create table if not exists training_profiles (
   user_id uuid primary key references app_users(id) on delete cascade,

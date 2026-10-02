@@ -390,6 +390,8 @@ export const da = {
       emptyTitle: 'Vælg mål og træningsdage',
       emptyDesc: 'Vælg dit mål og antal træningsdage/uge i profilen ovenfor for at få et forslag til ugeplan.',
       weekdaysShort: ['Man', 'Tir', 'Ons', 'Tor', 'Fre', 'Lør', 'Søn'],
+      lightened: (rpe: string) => `Planen er lettet denne uge — dine seneste ture har i snit følt sig hårde (RPE ${rpe}).`,
+      intensified: (rpe: string) => `Planen er skærpet denne uge — dine seneste ture har i snit følt sig lette (RPE ${rpe}).`,
     },
     analysis: {
       title: 'Din træning',
@@ -442,6 +444,13 @@ export const da = {
       longestMatch: 'Dette var ugens længste tur, som planlagt for "Lang tur".',
       longestMismatch: 'Denne dag var planlagt som ugens lange tur, men det var ikke din længste tur i denne uge.',
       intervalCaveat: 'Bemærk: et snit for hele turen viser ikke om du fik de korte, hårde indsatser ind — kun den samlede belastning.',
+      feelingQuestion: 'Hvordan havde du det på denne tur?',
+      rpeScale: ['Meget let', 'Let', 'Normal', 'Hårdt', 'Meget hårdt'],
+      feelingNoteLabel: 'Note (valgfrit)',
+      feelingNotePlaceholder: 'fx "Benene føltes tunge", "kunne være kørt længere"…',
+      saveFeeling: 'Gem',
+      feelingSaved: (rpeLabel: string) => `Gemt: ${rpeLabel}`,
+      feelingInfo: 'Dette er din egen vurdering — Strava kender ikke til, hvordan turen føltes. Det bruges til at justere næste ugeplan: flere hårde ture i træk letter planen, flere lette ture skærper den.',
     },
   },
 }

@@ -77,6 +77,8 @@ export interface ApiRide {
   duration_min: number | null
   avg_heartrate: number | null
   avg_watts: number | null
+  rpe: number | null
+  feeling_note: string | null
 }
 
 export interface ApiTrainingProfile {
@@ -136,8 +138,11 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ bike_id: ride.bikeId, date: ride.date, km: ride.km, note: ride.note, duration_min: ride.durationMin }),
     }),
-  updateRide: (id: string, patch: { bikeId?: string }) =>
-    request<ApiRide>(`/api/rides/${id}`, { method: 'PATCH', body: JSON.stringify({ bike_id: patch.bikeId }) }),
+  updateRide: (id: string, patch: { bikeId?: string; rpe?: number; feelingNote?: string }) =>
+    request<ApiRide>(`/api/rides/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ bike_id: patch.bikeId, rpe: patch.rpe, feeling_note: patch.feelingNote }),
+    }),
   deleteRide: (id: string) => request<{ ok: true }>(`/api/rides/${id}`, { method: 'DELETE' }),
 
   createComponent: (c: {

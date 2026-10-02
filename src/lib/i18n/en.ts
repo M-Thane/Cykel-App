@@ -390,6 +390,8 @@ export const en: Dict = {
       emptyTitle: 'Choose a goal and training days',
       emptyDesc: 'Choose your goal and training days/week in the profile above to get a suggested weekly plan.',
       weekdaysShort: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      lightened: (rpe: string) => `The plan is lighter this week — your recent rides have felt hard on average (RPE ${rpe}).`,
+      intensified: (rpe: string) => `The plan is sharper this week — your recent rides have felt easy on average (RPE ${rpe}).`,
     },
     analysis: {
       title: 'Your training',
@@ -442,6 +444,13 @@ export const en: Dict = {
       longestMatch: 'This was your longest ride this week, as planned for "Long ride".',
       longestMismatch: 'This day was planned as your long ride for the week, but it wasn\'t your longest ride this week.',
       intervalCaveat: "Note: a whole-ride average doesn't show whether you actually hit the short, hard efforts — only the overall load.",
+      feelingQuestion: 'How did this ride feel?',
+      rpeScale: ['Very easy', 'Easy', 'Normal', 'Hard', 'Very hard'],
+      feelingNoteLabel: 'Note (optional)',
+      feelingNotePlaceholder: 'e.g. "Legs felt heavy", "could have gone longer"…',
+      saveFeeling: 'Save',
+      feelingSaved: (rpeLabel: string) => `Saved: ${rpeLabel}`,
+      feelingInfo: "This is your own rating — Strava has no idea how the ride felt. It's used to adjust the next weekly plan: several hard rides in a row lightens the plan, several easy ones sharpens it.",
     },
   },
 }

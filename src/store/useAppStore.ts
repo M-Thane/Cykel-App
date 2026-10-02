@@ -38,6 +38,8 @@ function rideFromApi(a: ApiRide): RideLog {
     durationMin: a.duration_min ?? undefined,
     avgHeartrate: a.avg_heartrate ?? undefined,
     avgWatts: a.avg_watts ?? undefined,
+    rpe: a.rpe ?? undefined,
+    feelingNote: a.feeling_note ?? undefined,
   }
 }
 
@@ -75,6 +77,7 @@ interface AppState {
 
   addRide: (bikeId: string, km: number, date: string, note?: string, durationMin?: number) => void
   moveRideToBike: (id: string, bikeId: string) => void
+  logRideFeeling: (id: string, rpe: number, feelingNote?: string) => void
   removeRide: (id: string) => void
 
   updateTrainingProfile: (patch: Partial<TrainingProfile>) => void
@@ -169,6 +172,11 @@ export const useAppStore = create<AppState>()((set, get) => ({
   moveRideToBike: (id, bikeId) => {
     set((s) => ({ rides: s.rides.map((r) => (r.id === id ? { ...r, bikeId } : r)) }))
     api.updateRide(id, { bikeId }).catch((err) => set({ error: errMsg(err) }))
+  },
+
+  logRideFeeling: (id, rpe, feelingNote) => {
+    set((s) => ({ rides: s.rides.map((r) => (r.id === id ? { ...r, rpe, feelingNote } : r)) }))
+    api.updateRide(id, { rpe, feelingNote }).catch((err) => set({ error: errMsg(err) }))
   },
 
   removeRide: (id) => {
