@@ -1,8 +1,10 @@
-import { useEffect, useMemo } from 'react'
-import { Info } from 'lucide-react'
-import { Card, EmptyState, Field, Input, Select, SectionTitle } from '../components/ui'
+import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { Info, RefreshCw } from 'lucide-react'
+import { Button, Card, EmptyState, Field, Input, Select, SectionTitle } from '../components/ui'
 import { useAppStore } from '../store/useAppStore'
 import { fmtKm } from '../lib/format'
+import { api } from '../lib/api/client'
 import {
   TRAINING_GOALS,
   calcHrZones,
@@ -18,14 +20,33 @@ export default function Training() {
   const { t, locale } = useLang()
   const profile = useAppStore((s) => s.trainingProfile)
   const rides = useAppStore((s) => s.rides)
+  const defaultBikeId = useAppStore((s) => s.defaultBikeId)
   const updateTrainingProfile = useAppStore((s) => s.updateTrainingProfile)
   const refreshIfStale = useAppStore((s) => s.refreshIfStale)
+  const loadState = useAppStore((s) => s.loadState)
+
+  const [syncBusy, setSyncBusy] = useState(false)
+  const [syncResult, setSyncResult] = useState<string | null>(null)
 
   // Pick up Strava-synced rides from the last few minutes without requiring
   // a full app reload -- goals/zones/plan are all derived from `rides`.
   useEffect(() => {
     refreshIfStale()
   }, [refreshIfStale])
+
+  async function handleSync() {
+    setSyncBusy(true)
+    setSyncResult(null)
+    try {
+      const { imported } = await api.importStravaHistory()
+      setSyncResult(t.login.importHistoryResult(imported))
+      await loadState()
+    } catch {
+      setSyncResult(t.login.importHistoryError)
+    } finally {
+      setSyncBusy(false)
+    }
+  }
 
   const powerZones = useMemo(() => (profile.ftpWatts ? calcPowerZones(profile.ftpWatts) : null), [profile.ftpWatts])
   const hrZones = useMemo(() => (profile.maxHr ? calcHrZones(profile.maxHr) : null), [profile.maxHr])
@@ -43,7 +64,22 @@ export default function Training() {
 
   return (
     <div className="flex flex-col gap-5">
-      <SectionTitle subtitle={t.training.subtitle}>{t.training.title}</SectionTitle>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <SectionTitle subtitle={t.training.subtitle}>{t.training.title}</SectionTitle>
+        {defaultBikeId ? (
+          <div className="flex flex-col items-end gap-1">
+            <Button variant="secondary" onClick={handleSync} disabled={syncBusy}>
+              <RefreshCw size={14} className={syncBusy ? 'animate-spin' : ''} />
+              {syncBusy ? t.login.importHistoryBusy : t.login.importHistory}
+            </Button>
+            {syncResult && <span className="text-xs text-slate-500">{syncResult}</span>}
+          </div>
+        ) : (
+          <Link to="/sliddele" className="text-xs text-slate-500 underline hover:text-slate-300">
+            {t.login.defaultBike}
+          </Link>
+        )}
+      </div>
 
       <Card>
         <SectionTitle subtitle={t.training.profile.subtitle}>{t.training.profile.title}</SectionTitle>
