@@ -404,6 +404,32 @@ export const da = {
       p1: 'Zonerne følger almindeligt anerkendte modeller (Coggan-effektzoner ud fra FTP, %-af-makspuls-zoner) — ikke individuel coaching. Ugeplanen er en generisk skabelon, ikke et personligt træningsprogram.',
       p2: 'Analysen bruger kun km og dato fra dine logget ture. Angiver du varighed ved en tur, viser appen også timer og snitfart for ugen.',
     },
+    latestRide: {
+      title: 'Seneste tur',
+      subtitle: 'Hvordan din seneste tur ser ud i forhold til ugeplanen ovenfor.',
+      dateLabel: 'Dato',
+      kmLabel: 'Distance',
+      durationLabel: 'Tid',
+      avgSpeedLabel: 'Snitfart',
+      avgHrLabel: 'Snitpuls',
+      avgPowerLabel: 'Sniteffekt',
+      noPlanMessage: 'Vælg mål og træningsdage i profilen ovenfor for at få tilbagemelding på denne tur ud fra en ugeplan.',
+      restDayMessage: (km: string) =>
+        `Planen satte denne dag til hvile, men du kørte ${km}. En kort, let tur er sjældent et problem — sørg bare for at få restitutionen ind andre steder i ugen.`,
+      noIntensityMessage: (type: string) =>
+        `Vi kan ikke sige om intensiteten matchede en ${type}-tur — turen har ingen puls- eller effektdata fra Strava, eller du har ikke angivet FTP/makspuls i profilen.`,
+      wentWellTitle: 'Hvad gik godt',
+      improveTitle: 'Hvad kan du gøre anderledes',
+      intensityMatch: (type: string, zone: number, zoneCount: number) =>
+        `Snit-intensiteten lå i zone ${zone} af ${zoneCount}, lige hvor en ${type}-tur bør ligge.`,
+      intensityTooHard: (type: string, zone: number, expectedMax: number) =>
+        `Snit-intensiteten lå i zone ${zone}, højere end forventet (op til zone ${expectedMax}) for en ${type}-tur — prøv at holde tempoet lidt mere nede.`,
+      intensityTooEasy: (type: string, zone: number, expectedMin: number) =>
+        `Snit-intensiteten lå i zone ${zone}, lavere end forventet (mindst zone ${expectedMin}) for en ${type}-tur — du kan godt skubbe lidt mere.`,
+      longestMatch: 'Dette var ugens længste tur, som planlagt for "Lang tur".',
+      longestMismatch: 'Denne dag var planlagt som ugens lange tur, men det var ikke din længste tur i denne uge.',
+      intervalCaveat: 'Bemærk: et snit for hele turen viser ikke om du fik de korte, hårde indsatser ind — kun den samlede belastning.',
+    },
   },
 }
 

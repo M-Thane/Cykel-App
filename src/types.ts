@@ -57,6 +57,8 @@ export interface RideLog {
   km: number
   note?: string
   durationMin?: number
+  avgHeartrate?: number
+  avgWatts?: number
 }
 
 export interface TrainingProfile {

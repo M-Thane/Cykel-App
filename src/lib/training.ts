@@ -148,3 +148,103 @@ export function weeklySummaries(rides: RideLog[], numWeeks: number): WeekSummary
 export function currentWeekSummary(rides: RideLog[]): WeekSummary {
   return weeklySummaries(rides, 1)[0]
 }
+
+// --- Latest-ride vs. plan assessment ---
+
+function dayIdxOfIso(dateIso: string): number {
+  const [y, m, d] = dateIso.split('-').map(Number)
+  const utc = new Date(Date.UTC(y, m - 1, d))
+  return (utc.getUTCDay() + 6) % 7 // 0 = Monday
+}
+
+function zoneForPower(zones: PowerZone[], watts: number): number {
+  for (const z of zones) {
+    if (z.maxW === null || watts <= z.maxW) return z.zone
+  }
+  return zones[zones.length - 1].zone
+}
+
+function zoneForHr(zones: HrZone[], bpm: number): number {
+  for (const z of zones) {
+    if (bpm <= z.maxBpm) return z.zone
+  }
+  return zones[zones.length - 1].zone
+}
+
+// Expected average-intensity zone range per workout type. These are ranges
+// for the whole-ride *average*, which is all Strava gives us -- for
+// `interval`, the average can't show whether the hard efforts actually
+// happened, only the overall load, so the UI adds a caveat for that type.
+const EXPECTED_ZONE_POWER: Partial<Record<WorkoutType, [number, number]>> = {
+  restitution: [1, 1],
+  endurance: [1, 2],
+  lang_tur: [1, 2],
+  tempo: [3, 3],
+  interval: [3, 5],
+}
+
+const EXPECTED_ZONE_HR: Partial<Record<WorkoutType, [number, number]>> = {
+  restitution: [1, 1],
+  endurance: [1, 2],
+  lang_tur: [1, 2],
+  tempo: [3, 3],
+  interval: [2, 4],
+}
+
+export type IntensityOutcome = 'match' | 'too_hard' | 'too_easy'
+
+export type AssessmentCheck =
+  | { kind: 'intensity'; outcome: IntensityOutcome; source: 'power' | 'hr'; zone: number; zoneCount: number; expectedMin: number; expectedMax: number }
+  | { kind: 'longest_of_week'; outcome: 'match' | 'mismatch' }
+
+export interface RideAssessment {
+  ride: RideLog
+  plannedType: WorkoutType | null
+  checks: AssessmentCheck[]
+}
+
+/**
+ * Compares the most recent ride against the generated week plan for that
+ * day. Only produces checks the data actually supports -- e.g. no intensity
+ * check when the ride has no HR/power or the profile has no FTP/max HR --
+ * so the UI never has to invent an assessment it can't back up.
+ */
+export function assessLatestRide(
+  rides: RideLog[],
+  weekPlan: PlanDay[] | null,
+  powerZones: PowerZone[] | null,
+  hrZones: HrZone[] | null,
+): RideAssessment | null {
+  if (rides.length === 0) return null
+  const latest = [...rides].sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))[0]
+
+  const plannedType = weekPlan ? (weekPlan.find((d) => d.dayIdx === dayIdxOfIso(latest.date))?.type ?? null) : null
+  const checks: AssessmentCheck[] = []
+
+  if (plannedType && plannedType !== 'hvile') {
+    if (latest.avgWatts != null && powerZones) {
+      const zone = zoneForPower(powerZones, latest.avgWatts)
+      const expected = EXPECTED_ZONE_POWER[plannedType]
+      if (expected) {
+        const outcome: IntensityOutcome = zone < expected[0] ? 'too_easy' : zone > expected[1] ? 'too_hard' : 'match'
+        checks.push({ kind: 'intensity', outcome, source: 'power', zone, zoneCount: powerZones.length, expectedMin: expected[0], expectedMax: expected[1] })
+      }
+    } else if (latest.avgHeartrate != null && hrZones) {
+      const zone = zoneForHr(hrZones, latest.avgHeartrate)
+      const expected = EXPECTED_ZONE_HR[plannedType]
+      if (expected) {
+        const outcome: IntensityOutcome = zone < expected[0] ? 'too_easy' : zone > expected[1] ? 'too_hard' : 'match'
+        checks.push({ kind: 'intensity', outcome, source: 'hr', zone, zoneCount: hrZones.length, expectedMin: expected[0], expectedMax: expected[1] })
+      }
+    }
+
+    if (plannedType === 'lang_tur') {
+      const monday = mondayOfIso(latest.date)
+      const weekRides = rides.filter((r) => mondayOfIso(r.date) === monday)
+      const maxKm = Math.max(...weekRides.map((r) => r.km))
+      checks.push({ kind: 'longest_of_week', outcome: latest.km >= maxKm ? 'match' : 'mismatch' })
+    }
+  }
+
+  return { ride: latest, plannedType, checks }
+}

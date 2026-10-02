@@ -404,5 +404,31 @@ export const en: Dict = {
       p1: 'The zones follow widely recognized models (Coggan power zones from FTP, %-of-max-HR zones) — not individual coaching. The weekly plan is a generic template, not a personalized training program.',
       p2: 'The analysis only uses km and date from your logged rides. If you enter a duration for a ride, the app also shows hours and average speed for the week.',
     },
+    latestRide: {
+      title: 'Latest ride',
+      subtitle: 'How your most recent ride compares to the weekly plan above.',
+      dateLabel: 'Date',
+      kmLabel: 'Distance',
+      durationLabel: 'Time',
+      avgSpeedLabel: 'Avg speed',
+      avgHrLabel: 'Avg heart rate',
+      avgPowerLabel: 'Avg power',
+      noPlanMessage: 'Choose a goal and training days in the profile above to get feedback on this ride against a weekly plan.',
+      restDayMessage: (km: string) =>
+        `The plan had this day as rest, but you rode ${km}. A short, easy ride is rarely an issue — just make sure recovery happens elsewhere in the week.`,
+      noIntensityMessage: (type: string) =>
+        `We can't tell if the intensity matched a ${type} ride — the ride has no heart rate or power data from Strava, or you haven't entered FTP/max HR in the profile.`,
+      wentWellTitle: 'What went well',
+      improveTitle: 'What to do differently',
+      intensityMatch: (type: string, zone: number, zoneCount: number) =>
+        `Average intensity was in zone ${zone} of ${zoneCount}, right where a ${type} ride should be.`,
+      intensityTooHard: (type: string, zone: number, expectedMax: number) =>
+        `Average intensity was in zone ${zone}, higher than expected (up to zone ${expectedMax}) for a ${type} ride — try keeping the pace down a bit.`,
+      intensityTooEasy: (type: string, zone: number, expectedMin: number) =>
+        `Average intensity was in zone ${zone}, lower than expected (at least zone ${expectedMin}) for a ${type} ride — you can push a bit more.`,
+      longestMatch: 'This was your longest ride this week, as planned for "Long ride".',
+      longestMismatch: 'This day was planned as your long ride for the week, but it wasn\'t your longest ride this week.',
+      intervalCaveat: "Note: a whole-ride average doesn't show whether you actually hit the short, hard efforts — only the overall load.",
+    },
   },
 }

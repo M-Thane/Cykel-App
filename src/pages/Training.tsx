@@ -7,6 +7,7 @@ import { fmtKm } from '../lib/format'
 import { api } from '../lib/api/client'
 import {
   TRAINING_GOALS,
+  assessLatestRide,
   calcHrZones,
   calcPowerZones,
   currentWeekSummary,
@@ -15,6 +16,7 @@ import {
 } from '../lib/training'
 import type { TrainingGoal } from '../types'
 import { useLang } from '../lib/i18n/context'
+import { fmtDate } from '../lib/format'
 
 export default function Training() {
   const { t, locale } = useLang()
@@ -61,6 +63,23 @@ export default function Training() {
   const thisWeek = useMemo(() => currentWeekSummary(rides), [rides])
   const maxWeekKm = Math.max(1, ...weeks.map((w) => w.km))
   const hasAnyRideInWindow = weeks.some((w) => w.rideCount > 0)
+
+  const latestRide = useMemo(() => assessLatestRide(rides, weekPlan, powerZones, hrZones), [rides, weekPlan, powerZones, hrZones])
+  const latestRideTypeName = latestRide?.plannedType ? t.workoutTypes[latestRide.plannedType].name : ''
+  const wentWell: string[] = []
+  const toImprove: string[] = []
+  if (latestRide) {
+    for (const c of latestRide.checks) {
+      if (c.kind === 'intensity') {
+        if (c.outcome === 'match') wentWell.push(t.training.latestRide.intensityMatch(latestRideTypeName, c.zone, c.zoneCount))
+        else if (c.outcome === 'too_hard') toImprove.push(t.training.latestRide.intensityTooHard(latestRideTypeName, c.zone, c.expectedMax))
+        else toImprove.push(t.training.latestRide.intensityTooEasy(latestRideTypeName, c.zone, c.expectedMin))
+      } else if (c.kind === 'longest_of_week') {
+        if (c.outcome === 'match') wentWell.push(t.training.latestRide.longestMatch)
+        else toImprove.push(t.training.latestRide.longestMismatch)
+      }
+    }
+  }
 
   return (
     <div className="flex flex-col gap-5">
@@ -222,6 +241,83 @@ export default function Training() {
           </Card>
         )}
       </div>
+
+      {latestRide && (
+        <div>
+          <SectionTitle subtitle={t.training.latestRide.subtitle}>{t.training.latestRide.title}</SectionTitle>
+          <Card>
+            <div className="mb-3 flex flex-wrap gap-4">
+              <div>
+                <p className="text-xs text-slate-500">{t.training.latestRide.dateLabel}</p>
+                <p className="text-sm text-slate-200">{fmtDate(latestRide.ride.date, locale)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">{t.training.latestRide.kmLabel}</p>
+                <p className="text-sm text-slate-200">{fmtKm(latestRide.ride.km, locale)}</p>
+              </div>
+              {latestRide.ride.durationMin != null && (
+                <div>
+                  <p className="text-xs text-slate-500">{t.training.latestRide.durationLabel}</p>
+                  <p className="text-sm text-slate-200">{Math.round(latestRide.ride.durationMin)} min</p>
+                </div>
+              )}
+              {latestRide.ride.durationMin && latestRide.ride.km > 0 && (
+                <div>
+                  <p className="text-xs text-slate-500">{t.training.latestRide.avgSpeedLabel}</p>
+                  <p className="text-sm text-slate-200">{((latestRide.ride.km / latestRide.ride.durationMin) * 60).toFixed(1)} km/t</p>
+                </div>
+              )}
+              {latestRide.ride.avgHeartrate != null && (
+                <div>
+                  <p className="text-xs text-slate-500">{t.training.latestRide.avgHrLabel}</p>
+                  <p className="text-sm text-slate-200">{Math.round(latestRide.ride.avgHeartrate)} bpm</p>
+                </div>
+              )}
+              {latestRide.ride.avgWatts != null && (
+                <div>
+                  <p className="text-xs text-slate-500">{t.training.latestRide.avgPowerLabel}</p>
+                  <p className="text-sm text-slate-200">{Math.round(latestRide.ride.avgWatts)} W</p>
+                </div>
+              )}
+            </div>
+
+            {!weekPlan ? (
+              <p className="text-sm text-slate-400">{t.training.latestRide.noPlanMessage}</p>
+            ) : latestRide.plannedType === 'hvile' ? (
+              <p className="text-sm text-slate-400">{t.training.latestRide.restDayMessage(fmtKm(latestRide.ride.km, locale))}</p>
+            ) : (
+              <>
+                {latestRide.checks.length === 0 && (
+                  <p className="text-sm text-slate-400">{t.training.latestRide.noIntensityMessage(latestRideTypeName)}</p>
+                )}
+                {wentWell.length > 0 && (
+                  <div className="mb-2">
+                    <p className="text-xs font-medium uppercase tracking-wide text-emerald-500">{t.training.latestRide.wentWellTitle}</p>
+                    <ul className="mt-1 list-disc pl-4 text-sm text-slate-300">
+                      {wentWell.map((p, i) => (
+                        <li key={i}>{p}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {toImprove.length > 0 && (
+                  <div>
+                    <p className="text-xs font-medium uppercase tracking-wide text-amber-500">{t.training.latestRide.improveTitle}</p>
+                    <ul className="mt-1 list-disc pl-4 text-sm text-slate-300">
+                      {toImprove.map((p, i) => (
+                        <li key={i}>{p}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {latestRide.plannedType === 'interval' && (
+                  <p className="mt-2 text-xs text-slate-500">{t.training.latestRide.intervalCaveat}</p>
+                )}
+              </>
+            )}
+          </Card>
+        </div>
+      )}
 
       <div>
         <SectionTitle subtitle={t.training.analysis.subtitle}>{t.training.analysis.title}</SectionTitle>

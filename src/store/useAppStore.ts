@@ -29,7 +29,16 @@ function componentFromApi(a: ApiComponent): WearComponent {
 }
 
 function rideFromApi(a: ApiRide): RideLog {
-  return { id: a.id, bikeId: a.bike_id, date: a.date, km: Number(a.km), note: a.note ?? undefined, durationMin: a.duration_min ?? undefined }
+  return {
+    id: a.id,
+    bikeId: a.bike_id,
+    date: a.date,
+    km: Number(a.km),
+    note: a.note ?? undefined,
+    durationMin: a.duration_min ?? undefined,
+    avgHeartrate: a.avg_heartrate ?? undefined,
+    avgWatts: a.avg_watts ?? undefined,
+  }
 }
 
 function trainingProfileFromApi(a: ApiTrainingProfile): TrainingProfile {

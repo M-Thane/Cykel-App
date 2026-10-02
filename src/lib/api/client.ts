@@ -75,6 +75,8 @@ export interface ApiRide {
   km: number
   note: string | null
   duration_min: number | null
+  avg_heartrate: number | null
+  avg_watts: number | null
 }
 
 export interface ApiTrainingProfile {
